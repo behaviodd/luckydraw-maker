@@ -11,10 +11,12 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { LuckyDrawCard } from '@/components/domain/LuckyDrawCard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLuckyDraws } from '@/hooks/useLuckyDraws';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function VaultPage() {
   const router = useRouter();
-  const { draws, loading, deleteDraw } = useLuckyDraws();
+  const { user } = useAuth();
+  const { draws, loading, deleteDraw } = useLuckyDraws(user?.id);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const handleDeleteConfirm = async () => {

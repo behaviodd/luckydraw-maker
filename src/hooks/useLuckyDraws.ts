@@ -32,17 +32,19 @@ function mapItem(row: Record<string, unknown>): DrawItem {
   };
 }
 
-export function useLuckyDraws() {
+export function useLuckyDraws(userId?: string) {
   const [draws, setDraws] = useState<LuckyDraw[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
   const addToast = useUIStore((s) => s.addToast);
 
   const fetchDraws = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
     const { data, error } = await supabase
       .from('lucky_draws')
       .select('*, draw_items(*)')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -51,7 +53,7 @@ export function useLuckyDraws() {
       setDraws((data ?? []).map(mapDraw));
     }
     setLoading(false);
-  }, [supabase, addToast]);
+  }, [supabase, addToast, userId]);
 
   useEffect(() => {
     fetchDraws();
