@@ -1,26 +1,126 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Color palette — point color: #eb6b34 */
+  --color-bg-main: #FEFCFB;
+  --color-bg-warm: #FFF5F1;
+  --color-bg-card: #FFFFFF;
+  --color-bg-subtle: #F9F5F2;
+
+  --color-gum-pink: #eb6b34;
+  --color-gum-hotpink: #d45a28;
+  --color-gum-black: #1C1C1C;
+  --color-gum-dark: #2D2D2D;
+  --color-gum-yellow: #FFC900;
+  --color-gum-green: #23D18C;
+  --color-gum-blue: #90B8F8;
+  --color-gum-purple: #C9B1FF;
+  --color-gum-coral: #FF6B6B;
+  --color-gum-orange: #FFAB76;
+  --color-gum-mint: #A8F0D8;
+  --color-gum-cream: #FFF0DB;
+
+  --color-text-primary: #1C1C1C;
+  --color-text-secondary: #888888;
+  --color-text-muted: #BBBBBB;
+  --color-border: #1C1C1C;
+
+  --font-display: 'Bagel Fat One', cursive;
+  --font-body: 'Chiron GoRound TC', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  --shadow-brutal: 4px 4px 0px #1C1C1C;
+  --shadow-brutal-lg: 6px 6px 0px #1C1C1C;
+  --shadow-brutal-sm: 2px 2px 0px #1C1C1C;
+  --shadow-brutal-pink: 4px 4px 0px #eb6b34;
+  --shadow-brutal-yellow: 4px 4px 0px #FFC900;
+
+  --animate-wiggle: wiggle 2.5s ease-in-out infinite;
+  --animate-bounce-in: bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-spin-slow: spin 4s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
 }
 
+@keyframes bounce-in {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes rainbow-bg {
+  0% { background-color: #eb6b34; }
+  25% { background-color: #FFC900; }
+  50% { background-color: #23D18C; }
+  75% { background-color: #90B8F8; }
+  100% { background-color: #eb6b34; }
+}
+
+/* ═══ Brutal Card ═══ */
+.brutal-card {
+  background: #FFFFFF;
+  border: 3px solid #1C1C1C;
+  box-shadow: 4px 4px 0px #1C1C1C;
+}
+
+.brutal-card-pink {
+  background: #FFFFFF;
+  border: 3px solid #1C1C1C;
+  box-shadow: 4px 4px 0px #eb6b34;
+}
+
+/* ═══ Scrollbar ═══ */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #FFF5F1; }
+::-webkit-scrollbar-thumb {
+  background: #eb6b34;
+  border: 2px solid #1C1C1C;
+}
+
+/* ═══ Base ═══ */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #FEFCFB;
+  color: #1C1C1C;
+  font-family: 'Chiron GoRound TC', sans-serif;
+}
+
+/* ═══ Inputs ═══ */
+input, textarea, select {
+  background: #FFFFFF;
+  border: 3px solid #1C1C1C;
+  color: #1C1C1C;
+  padding: 10px 14px;
+  font-family: 'Chiron GoRound TC', sans-serif;
+  font-size: 14px;
+  box-shadow: 2px 2px 0px #1C1C1C;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 4px 4px 0px #eb6b34;
+  transform: translate(-1px, -1px);
+}
+
+input::placeholder, textarea::placeholder {
+  color: #BBBBBB;
+}
+
+::selection {
+  background: #eb6b34;
+  color: #FFFFFF;
 }
