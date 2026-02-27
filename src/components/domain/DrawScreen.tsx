@@ -2,13 +2,12 @@
 
 import { useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, RotateCcw, Share2 } from 'lucide-react';
+import { X, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useDrawStore } from '@/stores/drawStore';
 import { drawItem } from '@/lib/lottery';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
-import { useUIStore } from '@/stores/uiStore';
 import type { LuckyDraw } from '@/types';
 
 interface DrawScreenProps {
@@ -95,13 +94,6 @@ function ItemPreview({ draw }: { draw: LuckyDraw }) {
 export function DrawScreen({ draw }: DrawScreenProps) {
   const router = useRouter();
   const { isDrawing, setIsDrawing, lastResult, setLastResult } = useDrawStore();
-  const addToast = useUIStore((s) => s.addToast);
-
-  const handleShare = async () => {
-    const url = `${window.location.origin}/play/${draw.id}`;
-    await navigator.clipboard.writeText(url);
-    addToast({ type: 'success', message: '링크가 복사되었습니다!' });
-  };
 
   useEffect(() => {
     setIsDrawing(false);
@@ -124,16 +116,10 @@ export function DrawScreen({ draw }: DrawScreenProps) {
   return (
     <div className="relative z-10 min-h-screen flex flex-col bg-bg-warm">
       {/* Top bar */}
-      <div className="flex items-center justify-between p-6 border-b-3 border-gum-black bg-bg-card relative z-10">
-        <h1 className="font-display text-gum-pink text-xl">{draw.name}</h1>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={handleShare} className="font-bold text-text-secondary">
-            <Share2 className="w-5 h-5" />
-          </Button>
-          <Button variant="ghost" onClick={() => router.push('/vault')} className="font-bold text-text-secondary">
-            <X className="w-5 h-5" /> 나가기
-          </Button>
-        </div>
+      <div className="flex items-center justify-end p-6 border-b-3 border-gum-black bg-bg-card relative z-10">
+        <Button variant="ghost" onClick={() => router.push('/vault')} className="font-bold text-text-secondary">
+          <X className="w-5 h-5" /> 나가기
+        </Button>
       </div>
 
       <div className="flex-1 flex items-center justify-center relative z-10 p-6">
