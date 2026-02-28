@@ -1,13 +1,15 @@
 'use client';
 
+import { Reorder, useDragControls } from 'framer-motion';
 import { GripVertical, Minus, Plus, Trash2 } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Button } from '@/components/ui/Button';
-import type { UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import type { UseFormRegister, UseFormSetValue, UseFormWatch, FieldArrayWithId } from 'react-hook-form';
 import type { LuckyDrawFormInput } from '@/types';
 
 interface DrawItemCardProps {
   index: number;
+  field: FieldArrayWithId<LuckyDrawFormInput, 'items', 'id'>;
   register: UseFormRegister<LuckyDrawFormInput>;
   setValue: UseFormSetValue<LuckyDrawFormInput>;
   watch: UseFormWatch<LuckyDrawFormInput>;
@@ -19,15 +21,19 @@ interface DrawItemCardProps {
 }
 
 export function DrawItemCard({
-  index, register, setValue, watch, onRemove, probability, showProbability, isEditing, error,
+  index, field, register, setValue, watch, onRemove, probability, showProbability, isEditing, error,
 }: DrawItemCardProps) {
+  const dragControls = useDragControls();
   const quantity = watch(`items.${index}.quantity`);
   const remaining = watch(`items.${index}.remaining`);
   const imageUrl = watch(`items.${index}.imageUrl`);
 
   return (
-    <div className="brutal-card p-4 flex items-center gap-4">
-      <div className="cursor-grab text-text-muted hover:text-gum-black transition-colors">
+    <Reorder.Item value={field} dragListener={false} dragControls={dragControls} as="div" className="brutal-card p-4 flex items-center gap-4">
+      <div
+        onPointerDown={(e) => dragControls.start(e)}
+        className="cursor-grab active:cursor-grabbing text-text-muted hover:text-gum-black transition-colors touch-none select-none"
+      >
         <GripVertical className="w-5 h-5" />
       </div>
 
@@ -92,9 +98,9 @@ export function DrawItemCard({
         )}
       </div>
 
-      <Button variant="ghost" onClick={onRemove} className="text-text-muted hover:text-gum-coral !p-2">
+      <Button type="button" variant="ghost" onClick={onRemove} className="text-text-muted hover:text-gum-coral !p-2">
         <Trash2 className="w-4 h-4" />
       </Button>
-    </div>
+    </Reorder.Item>
   );
 }

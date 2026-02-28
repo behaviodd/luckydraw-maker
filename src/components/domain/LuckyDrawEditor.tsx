@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { Reorder } from 'framer-motion';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Plus, Sparkles, Scale } from 'lucide-react';
@@ -67,7 +68,22 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
         },
   });
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'items' });
+  const { fields, append, remove, move } = useFieldArray({ control, name: 'items' });
+
+  const handleReorder = (newOrder: typeof fields) => {
+    const oldIds = fields.map(f => f.id);
+    const newIds = newOrder.map(f => f.id);
+    if (oldIds.every((id, i) => id === newIds[i])) return;
+    let firstDiff = 0;
+    let lastDiff = oldIds.length - 1;
+    while (firstDiff < oldIds.length && oldIds[firstDiff] === newIds[firstDiff]) firstDiff++;
+    while (lastDiff >= 0 && oldIds[lastDiff] === newIds[lastDiff]) lastDiff--;
+    if (oldIds[firstDiff] === newIds[lastDiff]) {
+      move(firstDiff, lastDiff);
+    } else if (oldIds[lastDiff] === newIds[firstDiff]) {
+      move(lastDiff, firstDiff);
+    }
+  };
   const watchedItems = watch('items');
   const probabilityMode = watch('probabilityMode');
   const totalQuantity = watchedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
@@ -217,7 +233,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
             )}
           </div>
           {errors.items?.root && <p className="text-sm text-gum-coral mb-3">{errors.items.root.message}</p>}
-          <div className="flex flex-col gap-3">
+          <Reorder.Group axis="y" values={fields} onReorder={handleReorder} as="div" className="flex flex-col gap-3">
             {fields.map((field, index) => {
               const itemQty = watchedItems[index]?.quantity || 0;
               const itemRemaining = watchedItems[index]?.remaining ?? itemQty;
@@ -225,7 +241,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
                 ? (totalRemaining > 0 ? (itemRemaining / totalRemaining) * 100 : 0)
                 : (totalQuantity > 0 ? (itemQty / totalQuantity) * 100 : 0);
               return (
-                <DrawItemCard key={field.id} index={index}
+                <DrawItemCard key={field.id} field={field} index={index}
                   register={register} setValue={setValue} watch={watch}
                   onRemove={() => remove(index)} probability={probability}
                   showProbability={probabilityMode === 'weighted'}
@@ -234,14 +250,14 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
                 />
               );
             })}
-          </div>
+          </Reorder.Group>
           <Button type="button" variant="secondary" className="w-full mt-4"
-            onClick={() => append({ name: '', quantity: 1, imageFile: null, imageUrl: null })}>
+            onClick={() => append({ name: '', quantity: 1, ...(existingDraw ? { remaining: 1 } : {}), imageFile: null, imageUrl: null })}>
             <Plus className="w-4 h-4" /> 아이템 추가
           </Button>
         </GlassCard>
 
-        <div className="flex gap-3 sticky bottom-6">
+        <div className="flex gap-3 sticky bottom-6 z-20">
           <Button type="button" variant="secondary" className="flex-1" onClick={() => router.push('/vault')}>취소</Button>
           <Button type="submit" variant="primary" className="flex-1" isLoading={saving}>저장하기</Button>
         </div>
