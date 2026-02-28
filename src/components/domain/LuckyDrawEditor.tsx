@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 const drawItemSchema = z.object({
   name: z.string().min(1, '아이템 이름을 입력해주세요').max(30),
   quantity: z.number().int().min(1, '최소 1개 이상').max(9999),
+  remaining: z.number().int().min(0).optional(),
   imageFile: z.any().optional().nullable(),
   imageUrl: z.string().optional().nullable(),
 });
@@ -52,7 +53,8 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
           name: existingDraw.name, drawButtonLabel: existingDraw.drawButtonLabel,
           probabilityMode: existingDraw.probabilityMode,
           items: existingDraw.items?.map((item) => ({
-            name: item.name, quantity: item.quantity, imageUrl: item.imageUrl, imageFile: null,
+            name: item.name, quantity: item.quantity, remaining: item.remaining,
+            imageUrl: item.imageUrl, imageFile: null,
           })) ?? [],
         }
       : {
@@ -109,7 +111,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
         const { error: itemsError } = await supabase.from('draw_items').insert(
           data.items.map((item, idx) => ({
             draw_id: existingDraw.id, name: item.name, quantity: item.quantity,
-            remaining: item.quantity, image_url: imageUrls[idx], sort_order: idx,
+            remaining: item.remaining ?? item.quantity, image_url: imageUrls[idx], sort_order: idx,
           }))
         );
         if (itemsError) throw itemsError;
@@ -223,6 +225,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
                   register={register} setValue={setValue} watch={watch}
                   onRemove={() => remove(index)} probability={probability}
                   showProbability={probabilityMode === 'weighted'}
+                  isEditing={!!existingDraw}
                   error={errors.items?.[index]?.name?.message}
                 />
               );

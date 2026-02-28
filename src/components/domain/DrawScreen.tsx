@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { RotateCcw } from 'lucide-react';
 import { useDrawStore } from '@/stores/drawStore';
 import { drawItem } from '@/lib/lottery';
 import { createClient } from '@/lib/supabase/client';
@@ -95,7 +94,6 @@ function ItemPreview({ draw }: { draw: LuckyDraw }) {
 }
 
 export function DrawScreen({ draw, onItemDecremented }: DrawScreenProps) {
-  const router = useRouter();
   const supabase = createClient();
   const addToast = useUIStore((s) => s.addToast);
   const { isDrawing, setIsDrawing, lastResult, setLastResult } = useDrawStore();
@@ -131,13 +129,6 @@ export function DrawScreen({ draw, onItemDecremented }: DrawScreenProps) {
 
   return (
     <div className="relative z-10 min-h-screen flex flex-col bg-bg-warm">
-      {/* Top bar */}
-      <div className="flex items-center p-6 border-b-3 border-gum-black bg-bg-card relative z-10">
-        <Button variant="ghost" onClick={() => router.back()} className="font-bold text-text-secondary">
-          <ArrowLeft className="w-5 h-5" /> 뒤로가기
-        </Button>
-      </div>
-
       <div className="flex-1 flex items-center justify-center relative z-10 p-6">
         <AnimatePresence mode="wait">
           {/* Idle */}

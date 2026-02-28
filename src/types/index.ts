@@ -32,6 +32,7 @@ export interface LuckyDraw {
 export interface DrawItemFormInput {
   name: string;
   quantity: number;
+  remaining?: number;
   imageFile?: File | null;
   imageUrl?: string | null;
 }

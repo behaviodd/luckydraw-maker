@@ -14,13 +14,15 @@ interface DrawItemCardProps {
   onRemove: () => void;
   probability?: number;
   showProbability: boolean;
+  isEditing?: boolean;
   error?: string;
 }
 
 export function DrawItemCard({
-  index, register, setValue, watch, onRemove, probability, showProbability, error,
+  index, register, setValue, watch, onRemove, probability, showProbability, isEditing, error,
 }: DrawItemCardProps) {
   const quantity = watch(`items.${index}.quantity`);
+  const remaining = watch(`items.${index}.remaining`);
   const imageUrl = watch(`items.${index}.imageUrl`);
 
   return (
@@ -56,19 +58,38 @@ export function DrawItemCard({
         )}
       </div>
 
-      <div className="flex items-center gap-1">
-        <button type="button"
-          onClick={() => { if (quantity > 1) setValue(`items.${index}.quantity`, quantity - 1); }}
-          className="w-8 h-8 bg-bg-card border-2 border-gum-black flex items-center justify-center text-text-secondary hover:bg-gum-pink hover:text-white transition-colors shadow-brutal-sm">
-          <Minus className="w-3 h-3" />
-        </button>
-        <input type="number" {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-          className="w-14 text-center text-sm font-mono !py-1 !px-2" min={1} max={9999} />
-        <button type="button"
-          onClick={() => setValue(`items.${index}.quantity`, quantity + 1)}
-          className="w-8 h-8 bg-bg-card border-2 border-gum-black flex items-center justify-center text-text-secondary hover:bg-gum-pink hover:text-white transition-colors shadow-brutal-sm">
-          <Plus className="w-3 h-3" />
-        </button>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-1">
+          <button type="button"
+            onClick={() => { if (quantity > 1) setValue(`items.${index}.quantity`, quantity - 1); }}
+            className="w-8 h-8 bg-bg-card border-2 border-gum-black flex items-center justify-center text-text-secondary hover:bg-gum-pink hover:text-white transition-colors shadow-brutal-sm">
+            <Minus className="w-3 h-3" />
+          </button>
+          <input type="number" {...register(`items.${index}.quantity`, { valueAsNumber: true })}
+            className="w-14 text-center text-sm font-mono !py-1 !px-2" min={1} max={9999} />
+          <button type="button"
+            onClick={() => setValue(`items.${index}.quantity`, quantity + 1)}
+            className="w-8 h-8 bg-bg-card border-2 border-gum-black flex items-center justify-center text-text-secondary hover:bg-gum-pink hover:text-white transition-colors shadow-brutal-sm">
+            <Plus className="w-3 h-3" />
+          </button>
+        </div>
+        {isEditing && remaining !== undefined && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-text-muted font-bold whitespace-nowrap">남은</span>
+            <button type="button"
+              onClick={() => { if (remaining > 0) setValue(`items.${index}.remaining`, remaining - 1); }}
+              className="w-6 h-6 bg-bg-card border-2 border-gum-black/50 flex items-center justify-center text-text-secondary hover:bg-gum-green hover:text-white transition-colors text-[10px]">
+              <Minus className="w-2.5 h-2.5" />
+            </button>
+            <input type="number" {...register(`items.${index}.remaining`, { valueAsNumber: true })}
+              className="w-12 text-center text-xs font-mono !py-0.5 !px-1 border-gum-black/50" min={0} max={quantity} />
+            <button type="button"
+              onClick={() => { if (remaining < quantity) setValue(`items.${index}.remaining`, remaining + 1); }}
+              className="w-6 h-6 bg-bg-card border-2 border-gum-black/50 flex items-center justify-center text-text-secondary hover:bg-gum-green hover:text-white transition-colors text-[10px]">
+              <Plus className="w-2.5 h-2.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       <Button variant="ghost" onClick={onRemove} className="text-text-muted hover:text-gum-coral !p-2">

@@ -83,7 +83,7 @@ export default function DrawInfoPage({ params }: { params: Promise<{ id: string 
       </GlassCard>
 
       <div className="flex justify-center gap-3">
-        <Button variant="draw" onClick={() => router.push(`/draw/${draw.id}`)}><Play className="w-5 h-5" /> 드로우 시작!</Button>
+        <Button variant="draw" onClick={() => window.open(`/draw/${draw.id}`, '_blank')}><Play className="w-5 h-5" /> 드로우 시작!</Button>
         <Button variant="secondary" onClick={handleShare}><Share2 className="w-5 h-5" /> 공유</Button>
       </div>
     </div>
