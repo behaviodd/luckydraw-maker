@@ -71,6 +71,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
   const watchedItems = watch('items');
   const probabilityMode = watch('probabilityMode');
   const totalQuantity = watchedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  const totalRemaining = watchedItems.reduce((sum, item) => sum + (item.remaining ?? item.quantity ?? 0), 0);
 
   const onSubmit = async (data: LuckyDrawFormInput) => {
     if (!user) return;
@@ -219,7 +220,10 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
           <div className="flex flex-col gap-3">
             {fields.map((field, index) => {
               const itemQty = watchedItems[index]?.quantity || 0;
-              const probability = totalQuantity > 0 ? (itemQty / totalQuantity) * 100 : 0;
+              const itemRemaining = watchedItems[index]?.remaining ?? itemQty;
+              const probability = existingDraw
+                ? (totalRemaining > 0 ? (itemRemaining / totalRemaining) * 100 : 0)
+                : (totalQuantity > 0 ? (itemQty / totalQuantity) * 100 : 0);
               return (
                 <DrawItemCard key={field.id} index={index}
                   register={register} setValue={setValue} watch={watch}
