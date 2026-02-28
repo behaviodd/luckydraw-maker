@@ -12,6 +12,7 @@ export interface DrawItem {
   drawId: string;
   name: string;
   quantity: number;
+  remaining: number;
   imageUrl: string | null;
   sortOrder: number;
 }

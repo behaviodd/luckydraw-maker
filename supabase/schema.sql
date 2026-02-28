@@ -52,6 +52,34 @@ CREATE POLICY "items_owner" ON draw_items
     )
   );
 
+-- lucky_draws: 누구나 읽기 (play 경로용)
+CREATE POLICY "draws_public_read" ON lucky_draws
+  FOR SELECT USING (true);
+
+-- draw_items: 누구나 읽기 (play 경로용)
+CREATE POLICY "items_public_read" ON draw_items
+  FOR SELECT USING (true);
+
+-- remaining 컬럼: 남은 수량 추적
+ALTER TABLE draw_items ADD COLUMN remaining INTEGER;
+UPDATE draw_items SET remaining = quantity WHERE remaining IS NULL;
+ALTER TABLE draw_items ALTER COLUMN remaining SET NOT NULL;
+ALTER TABLE draw_items ADD CONSTRAINT draw_items_remaining_non_negative CHECK (remaining >= 0);
+
+-- 아이템 수량 차감 RPC (SECURITY DEFINER로 RLS 우회)
+CREATE OR REPLACE FUNCTION decrement_item_quantity(p_item_id UUID)
+RETURNS JSON LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_row draw_items%ROWTYPE;
+BEGIN
+  UPDATE draw_items SET remaining = remaining - 1
+  WHERE id = p_item_id AND remaining > 0
+  RETURNING * INTO v_row;
+  IF v_row IS NULL THEN
+    RETURN json_build_object('success', false);
+  END IF;
+  RETURN json_build_object('success', true, 'remaining', v_row.remaining);
+END; $$;
+
 -- Storage: 아이템 이미지
 -- Supabase 대시보드에서 'draw-images' 버킷 생성 (public)
 -- 정책: 인증된 사용자만 업로드, 누구나 읽기

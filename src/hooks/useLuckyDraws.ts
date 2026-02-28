@@ -27,6 +27,7 @@ function mapItem(row: Record<string, unknown>): DrawItem {
     drawId: row.draw_id as string,
     name: row.name as string,
     quantity: row.quantity as number,
+    remaining: (row.remaining as number) ?? (row.quantity as number),
     imageUrl: row.image_url as string | null,
     sortOrder: row.sort_order as number,
   };
@@ -95,5 +96,5 @@ export function useLuckyDraw(id: string) {
     fetch();
   }, [id, supabase]);
 
-  return { draw, loading };
+  return { draw, setDraw, loading };
 }

@@ -28,7 +28,7 @@ export default function DrawInfoPage({ params }: { params: Promise<{ id: string 
   }
 
   const items = draw.items ?? [];
-  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalRemaining = items.reduce((sum, item) => sum + item.remaining, 0);
   const isWeighted = draw.probabilityMode === 'weighted';
   const COLORS = ['bg-gum-pink', 'bg-gum-yellow', 'bg-gum-green', 'bg-gum-blue', 'bg-gum-purple', 'bg-gum-orange'];
 
@@ -46,7 +46,10 @@ export default function DrawInfoPage({ params }: { params: Promise<{ id: string 
         <h2 className="font-display text-lg text-gum-pink mb-4">아이템 목록</h2>
         <div className="flex flex-col gap-3">
           {items.sort((a, b) => a.sortOrder - b.sortOrder).map((item, index) => {
-            const probability = isWeighted ? (item.quantity / totalQuantity) * 100 : (1 / items.length) * 100;
+            const availableItems = items.filter((i) => i.remaining > 0);
+            const probability = item.remaining <= 0 ? 0
+              : isWeighted ? (item.remaining / totalRemaining) * 100
+              : (1 / availableItems.length) * 100;
             return (
               <motion.div key={item.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.05 }}
                 className="flex items-center gap-4 p-3 bg-bg-subtle border-2 border-gum-black shadow-brutal-sm">
@@ -62,7 +65,7 @@ export default function DrawInfoPage({ params }: { params: Promise<{ id: string 
                 )}
                 <div className="flex-1">
                   <p className="text-sm text-gum-black font-bold">{item.name}</p>
-                  <p className="text-xs text-text-muted font-mono">수량: {item.quantity}</p>
+                  <p className="text-xs text-text-muted font-mono">수량: {item.remaining} / {item.quantity}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {isWeighted && (

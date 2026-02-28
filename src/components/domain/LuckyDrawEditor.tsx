@@ -109,7 +109,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
         const { error: itemsError } = await supabase.from('draw_items').insert(
           data.items.map((item, idx) => ({
             draw_id: existingDraw.id, name: item.name, quantity: item.quantity,
-            image_url: imageUrls[idx], sort_order: idx,
+            remaining: item.quantity, image_url: imageUrls[idx], sort_order: idx,
           }))
         );
         if (itemsError) throw itemsError;
@@ -122,7 +122,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
         const { error: itemsError } = await supabase.from('draw_items').insert(
           data.items.map((item, idx) => ({
             draw_id: drawData.id, name: item.name, quantity: item.quantity,
-            image_url: imageUrls[idx], sort_order: idx,
+            remaining: item.quantity, image_url: imageUrls[idx], sort_order: idx,
           }))
         );
         if (itemsError) throw itemsError;

@@ -2,16 +2,19 @@
 
 import { useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, RotateCcw } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useDrawStore } from '@/stores/drawStore';
 import { drawItem } from '@/lib/lottery';
+import { createClient } from '@/lib/supabase/client';
+import { useUIStore } from '@/stores/uiStore';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
 import type { LuckyDraw } from '@/types';
 
 interface DrawScreenProps {
   draw: LuckyDraw;
+  onItemDecremented?: (itemId: string, newRemaining: number) => void;
 }
 
 const CONFETTI_COLORS = ['#eb6b34', '#FFC900', '#23D18C', '#90B8F8', '#C9B1FF', '#FF6B6B', '#FFAB76'];
@@ -91,9 +94,13 @@ function ItemPreview({ draw }: { draw: LuckyDraw }) {
   );
 }
 
-export function DrawScreen({ draw }: DrawScreenProps) {
+export function DrawScreen({ draw, onItemDecremented }: DrawScreenProps) {
   const router = useRouter();
+  const supabase = createClient();
+  const addToast = useUIStore((s) => s.addToast);
   const { isDrawing, setIsDrawing, lastResult, setLastResult } = useDrawStore();
+
+  const allExhausted = (draw.items ?? []).every((item) => item.remaining <= 0);
 
   useEffect(() => {
     setIsDrawing(false);
@@ -104,11 +111,20 @@ export function DrawScreen({ draw }: DrawScreenProps) {
     if (!draw.items || draw.items.length === 0) return;
     setIsDrawing(true);
     const result = drawItem(draw.items, draw.probabilityMode);
-    setTimeout(() => {
+    if (!result) {
+      setIsDrawing(false);
+      addToast({ type: 'info', message: '모든 아이템이 소진되었습니다!' });
+      return;
+    }
+    setTimeout(async () => {
       setLastResult({ item: result, isNew: true });
       setIsDrawing(false);
+      const { data } = await supabase.rpc('decrement_item_quantity', { p_item_id: result.id });
+      if (data?.success && onItemDecremented) {
+        onItemDecremented(result.id, data.remaining);
+      }
     }, 2500);
-  }, [draw, setIsDrawing, setLastResult]);
+  }, [draw, setIsDrawing, setLastResult, supabase, addToast, onItemDecremented]);
 
   const handleReset = () => setLastResult(null);
   const itemCount = draw.items?.length ?? 0;
@@ -116,9 +132,9 @@ export function DrawScreen({ draw }: DrawScreenProps) {
   return (
     <div className="relative z-10 min-h-screen flex flex-col bg-bg-warm">
       {/* Top bar */}
-      <div className="flex items-center justify-end p-6 border-b-3 border-gum-black bg-bg-card relative z-10">
-        <Button variant="ghost" onClick={() => router.push('/vault')} className="font-bold text-text-secondary">
-          <X className="w-5 h-5" /> 나가기
+      <div className="flex items-center p-6 border-b-3 border-gum-black bg-bg-card relative z-10">
+        <Button variant="ghost" onClick={() => router.back()} className="font-bold text-text-secondary">
+          <ArrowLeft className="w-5 h-5" /> 뒤로가기
         </Button>
       </div>
 
@@ -137,8 +153,18 @@ export function DrawScreen({ draw }: DrawScreenProps) {
                   {itemCount}개 아이템 · {draw.probabilityMode === 'equal' ? '균등확률' : '차등확률'}
                 </p>
               </div>
-              <ItemPreview draw={draw} />
-              <Button variant="draw" onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+              {allExhausted ? (
+                <GlassCard className="flex flex-col items-center gap-4 p-8">
+                  <p className="text-4xl">📦</p>
+                  <p className="font-display text-xl text-gum-black">모든 아이템이 소진되었어요!</p>
+                  <p className="text-sm text-text-secondary">더 이상 뽑을 수 있는 아이템이 없습니다.</p>
+                </GlassCard>
+              ) : (
+                <>
+                  <ItemPreview draw={draw} />
+                  <Button variant="draw" onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                </>
+              )}
             </motion.div>
           )}
 
