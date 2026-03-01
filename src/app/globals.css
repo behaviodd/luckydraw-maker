@@ -835,6 +835,21 @@ input::placeholder, textarea::placeholder {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
 }
 
+/* ── 관리자 MDEditor 내부 스타일 보호 ── */
+[data-admin] .w-md-editor textarea {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: transparent !important;
+}
+
+[data-admin] .w-md-editor-content *,
+[data-admin] .w-md-editor-text-pre,
+[data-admin] .w-md-editor-text-input {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
+}
+
 /* ── 관리자 버튼 기본 스타일 (animate-wiggle 등 사용자 효과 제거) ── */
 [data-admin] button {
   animation: none !important;
