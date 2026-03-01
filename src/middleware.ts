@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const protectedPaths = ['/vault', '/draw', '/create', '/edit'];
+const protectedPaths = ['/vault', '/draw', '/create', '/edit', '/admin'];
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({
@@ -42,9 +42,17 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
+  // /admin 경로: 관리자 권한 확인
+  if (req.nextUrl.pathname.startsWith('/admin') && session) {
+    const { data: isAdmin } = await supabase.rpc('is_admin');
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL('/vault?error=unauthorized', req.url));
+    }
+  }
+
   return res;
 }
 
 export const config = {
-  matcher: ['/vault/:path*', '/draw/:path*', '/create/:path*', '/edit/:path*'],
+  matcher: ['/vault/:path*', '/draw/:path*', '/create/:path*', '/edit/:path*', '/admin/:path*'],
 };

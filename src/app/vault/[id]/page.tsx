@@ -41,7 +41,7 @@ export default function VaultDetailPage({ params }: { params: Promise<{ id: stri
         <div>
           <h1 className="font-display text-2xl text-gum-black">{draw.name}</h1>
           <p className="text-sm text-text-secondary">
-            {format(new Date(draw.createdAt), 'yyyy.MM.dd', { locale: ko })} · {isWeighted ? '차등확률' : '균등확률'} · {items.length}개 아이템
+            {format(new Date(draw.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })} · {isWeighted ? '차등확률' : '균등확률'} · {items.length}개 아이템
           </p>
         </div>
       </div>

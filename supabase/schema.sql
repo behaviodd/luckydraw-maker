@@ -83,3 +83,64 @@ END; $$;
 -- Storage: 아이템 이미지
 -- Supabase 대시보드에서 'draw-images' 버킷 생성 (public)
 -- 정책: 인증된 사용자만 업로드, 누구나 읽기
+
+-- ═══════════════════════════════════════════
+-- 관리자 권한
+-- ═══════════════════════════════════════════
+CREATE TABLE admins (
+  user_id    UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  granted_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- 관리자 추가는 Supabase 대시보드 SQL 에디터에서 직접 수행:
+-- INSERT INTO admins (user_id) VALUES ('관리자-uuid');
+
+-- ═══════════════════════════════════════════
+-- 공지사항
+-- ═══════════════════════════════════════════
+CREATE TABLE announcements (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title        TEXT NOT NULL,
+  content      TEXT NOT NULL,
+  is_pinned    BOOLEAN DEFAULT false,
+  is_published BOOLEAN DEFAULT false,
+  created_at   TIMESTAMPTZ DEFAULT NOW(),
+  updated_at   TIMESTAMPTZ DEFAULT NOW(),
+  author_id    UUID REFERENCES auth.users(id)
+);
+
+-- 사용자별 읽음 여부 (안 읽은 공지 뱃지용)
+CREATE TABLE announcement_reads (
+  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  announcement_id UUID REFERENCES announcements(id) ON DELETE CASCADE,
+  read_at         TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, announcement_id)
+);
+
+-- ═══════════════════════════════════════════
+-- RLS: admins / announcements / announcement_reads
+-- ═══════════════════════════════════════════
+ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE announcement_reads ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "admins_self_read" ON admins
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "announcements_public_read" ON announcements
+  FOR SELECT USING (is_published = true);
+
+CREATE POLICY "announcements_admin_all" ON announcements
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM admins WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "reads_self" ON announcement_reads
+  FOR ALL USING (auth.uid() = user_id);
+
+-- ═══════════════════════════════════════════
+-- 관리자 여부 확인 RPC
+-- ═══════════════════════════════════════════
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (SELECT 1 FROM admins WHERE user_id = auth.uid());
+$$ LANGUAGE sql SECURITY DEFINER;

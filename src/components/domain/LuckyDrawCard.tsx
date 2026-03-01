@@ -70,7 +70,7 @@ export function LuckyDrawCard({ draw, index, onDelete, onDuplicate }: LuckyDrawC
             <div className="mb-3">
               <h3 className="font-display text-xl text-gum-black leading-snug mb-1">{draw.name}</h3>
               <p className="text-xs text-text-muted font-mono">
-                {format(new Date(draw.createdAt), 'yyyy.MM.dd', { locale: ko })}
+                {format(new Date(draw.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })}
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">

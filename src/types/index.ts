@@ -54,3 +54,18 @@ export interface Toast {
   type: 'success' | 'error' | 'info';
   message: string;
 }
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  isPinned: boolean;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+  authorId: string;
+}
+
+export interface AnnouncementWithReadStatus extends Announcement {
+  isRead: boolean;
+}

@@ -21,13 +21,16 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Chiron+GoRound+TC&family=DM+Mono:wght@400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Gothic+A1:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="min-h-screen bg-bg-main font-body text-text-primary antialiased">
         <StarField />
         {children}
+        <footer className="relative z-10 py-4 text-center text-xs text-text-muted font-mono">
+          2026 bhvd
+        </footer>
         <ToastContainer />
       </body>
     </html>
