@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Save, Send, Eye, Pin } from 'lucide-react';
 import * as Switch from '@radix-ui/react-switch';
-import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { AnnouncementDetail } from '@/components/domain/AnnouncementDetail';
@@ -123,20 +122,23 @@ export default function AnnouncementEditorClient({ id }: { id: string }) {
   return (
     <main className="max-w-3xl mx-auto px-6 py-8">
       <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" onClick={() => router.push('/admin')}>
+        <button
+          onClick={() => router.push('/admin')}
+          className="p-2 text-text-secondary hover:text-text-primary hover:bg-bg-subtle rounded-lg transition-colors cursor-pointer"
+        >
           <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <h1 className="font-display text-2xl text-gum-black">
+        </button>
+        <h1 className="text-2xl font-bold text-text-primary">
           {isNew ? '새 공지 작성' : '공지 수정'}
         </h1>
       </div>
 
       <div className="flex flex-col gap-6">
         <GlassCard>
-          <h2 className="font-display text-lg text-gum-pink mb-4">기본 설정</h2>
+          <h2 className="text-lg font-semibold text-text-primary mb-4">기본 설정</h2>
           <div className="flex flex-col gap-4">
             <div>
-              <label className="text-sm text-text-secondary mb-1 block font-bold">제목</label>
+              <label className="text-sm text-text-secondary mb-1 block font-medium">제목</label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -151,16 +153,16 @@ export default function AnnouncementEditorClient({ id }: { id: string }) {
                   checked={isPinned}
                   onCheckedChange={setIsPinned}
                   className={cn(
-                    'w-11 h-6 rounded-full border-2 border-gum-black transition-colors relative',
-                    isPinned ? 'bg-gum-yellow' : 'bg-bg-subtle',
+                    'w-11 h-6 rounded-full border border-border transition-colors relative',
+                    isPinned ? 'bg-gum-pink' : 'bg-bg-subtle',
                   )}
                 >
                   <Switch.Thumb className={cn(
-                    'block w-4 h-4 bg-white border-2 border-gum-black rounded-full transition-transform',
+                    'block w-4 h-4 bg-white rounded-full transition-transform shadow-sm',
                     isPinned ? 'translate-x-[22px]' : 'translate-x-[2px]',
                   )} />
                 </Switch.Root>
-                <span className="text-sm font-bold text-text-secondary flex items-center gap-1">
+                <span className="text-sm font-medium text-text-secondary flex items-center gap-1">
                   <Pin className="w-3.5 h-3.5" /> 고정 공지
                 </span>
               </label>
@@ -169,12 +171,12 @@ export default function AnnouncementEditorClient({ id }: { id: string }) {
         </GlassCard>
 
         <GlassCard className="p-0 overflow-hidden">
-          <div className="flex border-b-3 border-gum-black">
+          <div className="flex border-b border-border">
             <button
               onClick={() => setTab('edit')}
               className={cn(
-                'flex-1 py-3 text-sm font-display text-center transition-colors',
-                tab === 'edit' ? 'bg-gum-pink text-white' : 'bg-bg-card text-text-secondary hover:bg-bg-subtle',
+                'flex-1 py-3 text-sm font-medium text-center transition-colors cursor-pointer',
+                tab === 'edit' ? 'text-gum-pink border-b-2 border-gum-pink bg-bg-card' : 'text-text-secondary hover:bg-bg-subtle',
               )}
             >
               작성
@@ -182,8 +184,8 @@ export default function AnnouncementEditorClient({ id }: { id: string }) {
             <button
               onClick={() => setTab('preview')}
               className={cn(
-                'flex-1 py-3 text-sm font-display text-center transition-colors border-l-3 border-gum-black',
-                tab === 'preview' ? 'bg-gum-pink text-white' : 'bg-bg-card text-text-secondary hover:bg-bg-subtle',
+                'flex-1 py-3 text-sm font-medium text-center transition-colors cursor-pointer',
+                tab === 'preview' ? 'text-gum-pink border-b-2 border-gum-pink bg-bg-card' : 'text-text-secondary hover:bg-bg-subtle',
               )}
             >
               <Eye className="w-3.5 h-3.5 inline mr-1" /> 미리보기
@@ -206,9 +208,8 @@ export default function AnnouncementEditorClient({ id }: { id: string }) {
                   height={400}
                   preview="edit"
                   style={{
-                    borderRadius: 0,
-                    border: '3px solid var(--color-border)',
-                    boxShadow: 'var(--shadow-brutal-sm)',
+                    borderRadius: '10px',
+                    border: '1px solid var(--color-border)',
                   }}
                 />
               </motion.div>
@@ -233,27 +234,37 @@ export default function AnnouncementEditorClient({ id }: { id: string }) {
         </GlassCard>
 
         <div className="flex gap-3 sticky bottom-6 z-20">
-          <Button type="button" variant="secondary" className="flex-1" onClick={() => router.push('/admin')}>
-            취소
-          </Button>
-          <Button
+          <button
             type="button"
-            variant="secondary"
-            className="flex-1"
-            isLoading={saving}
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-text-secondary bg-bg-subtle rounded-lg hover:bg-border transition-colors cursor-pointer"
+            onClick={() => router.push('/admin')}
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-text-secondary bg-bg-card border border-border rounded-lg hover:bg-bg-subtle transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => handleSave(false)}
           >
-            <Save className="w-4 h-4" /> 임시저장
-          </Button>
-          <Button
+            {saving ? (
+              <span className="inline-block w-4 h-4 border-2 border-text-muted border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <><Save className="w-4 h-4" /> 임시저장</>
+            )}
+          </button>
+          <button
             type="button"
-            variant="primary"
-            className="flex-1"
-            isLoading={saving}
+            disabled={saving}
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-gum-pink rounded-lg hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => handleSave(true)}
           >
-            <Send className="w-4 h-4" /> 저장 & 발행
-          </Button>
+            {saving ? (
+              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <><Send className="w-4 h-4" /> 저장 & 발행</>
+            )}
+          </button>
         </div>
       </div>
     </main>

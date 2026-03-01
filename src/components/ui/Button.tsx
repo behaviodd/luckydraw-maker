@@ -4,6 +4,7 @@ import { motion, type HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { forwardRef } from 'react';
 import { useThemeStore } from '@/stores/themeStore';
+import { useIsAdmin } from '@/contexts/AdminContext';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'draw';
 
@@ -45,32 +46,33 @@ const variantStyles: Record<ButtonVariant, string> = {
 
 const candyVariantStyles: Partial<Record<ButtonVariant, string>> = {
   draw: [
-    'min-w-[280px] h-[80px] text-xl font-display italic',
-    'text-white border-2 border-white/60',
+    'min-w-[280px] h-[80px] text-xl font-display',
+    'text-white border-0',
     'btn-draw',
   ].join(' '),
   primary: [
     'text-white px-6 py-3',
-    'border-2 border-white/60',
+    'border-0',
     'hover:brightness-110',
   ].join(' '),
   secondary: [
     'bg-accent-secondary text-white px-6 py-3',
-    'border-2 border-white/60',
+    'border-0',
     'hover:bg-accent-primary',
     'transition-colors duration-300',
   ].join(' '),
   danger: [
     'bg-error text-white px-6 py-3',
-    'border-2 border-white/60',
+    'border-0',
   ].join(' '),
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', isLoading, className, children, disabled, style, ...props }, ref) => {
+    const isAdmin = useIsAdmin();
     const currentTheme = useThemeStore((s) => s.currentTheme);
-    const isRetro = currentTheme === 'retro-pc';
-    const isCottonCandy = currentTheme === 'cotton-candy';
+    const isRetro = !isAdmin && currentTheme === 'retro-pc';
+    const isCottonCandy = !isAdmin && currentTheme === 'cotton-candy';
 
     const baseClasses = 'inline-flex items-center justify-center gap-2 font-display text-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
 
@@ -87,7 +89,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       if (variant === 'draw' || variant === 'primary') {
         extraStyle = {
           ...style,
-          background: 'linear-gradient(135deg, #FF6FA8, #C9A8E2)',
+          background: '#FF99C0',
         };
       }
     } else {

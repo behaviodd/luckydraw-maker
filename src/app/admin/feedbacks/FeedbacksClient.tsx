@@ -8,7 +8,6 @@ import { ko } from 'date-fns/locale';
 import { useAdminFeedbacks } from '@/hooks/useAdminFeedbacks';
 import { Badge } from '@/components/ui/Badge';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { cn } from '@/lib/utils';
 import type { Feedback, FeedbackCategory } from '@/types';
@@ -43,20 +42,15 @@ function FeedbackCard({
   return (
     <GlassCard
       className={cn(
-        'hover:shadow-brutal-lg hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all duration-200 cursor-pointer',
-        !feedback.isRead && 'border-gum-pink',
+        'transition-all duration-200 cursor-pointer hover:shadow-md',
+        !feedback.isRead && 'ring-1 ring-gum-pink',
       )}
       onClick={onToggle}
     >
-      {/* Color strip */}
-      <div className="overflow-hidden -mx-6 -mt-6 mb-4 accent-bar">
-        <div className={cn('h-2', !feedback.isRead ? 'bg-gum-pink' : 'bg-gum-black/20')} />
-      </div>
-
       {/* Header */}
       <div className="flex items-center gap-2 mb-2 flex-wrap">
         <Badge className={cat.className}>{cat.label}</Badge>
-        <span className="text-xs text-text-muted font-mono ml-auto">
+        <span className="text-xs text-text-muted ml-auto">
           {formatDistanceToNow(new Date(feedback.createdAt), { addSuffix: true, locale: ko })}
         </span>
         {feedback.isRead ? (
@@ -69,7 +63,7 @@ function FeedbackCard({
       {/* Subject */}
       <h3 className={cn(
         'text-lg leading-snug mb-1 truncate',
-        !feedback.isRead ? 'font-display text-gum-black' : 'font-bold text-gum-black/70',
+        !feedback.isRead ? 'font-semibold text-text-primary' : 'font-medium text-text-secondary',
       )}>
         {feedback.subject}
       </h3>
@@ -80,7 +74,7 @@ function FeedbackCard({
         <a
           href={mailtoHref}
           onClick={(e) => e.stopPropagation()}
-          className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-gum-blue hover:text-gum-blue/80 transition-colors"
+          className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-gum-pink hover:text-gum-pink/80 transition-colors"
         >
           <Mail className="w-3 h-3" /> 답장
         </a>
@@ -97,7 +91,7 @@ function FeedbackCard({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed border-t-2 border-gum-black/10 pt-3 mt-1">
+            <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed border-t border-border pt-3 mt-1">
               {feedback.message}
             </p>
           </motion.div>
@@ -142,7 +136,7 @@ export default function FeedbacksClient() {
   return (
     <main className="max-w-5xl mx-auto px-6 py-8">
       <div className="mb-8">
-        <h1 className="font-display text-3xl text-gum-black mb-1">사용자 피드백</h1>
+        <h1 className="text-2xl font-bold text-text-primary mb-1">사용자 피드백</h1>
         <p className="text-sm text-text-secondary">사용자들의 피드백을 확인하고 관리하세요</p>
       </div>
 
@@ -153,10 +147,10 @@ export default function FeedbacksClient() {
             key={cat.value}
             onClick={() => setCategory(cat.value)}
             className={cn(
-              'px-4 py-2 text-sm font-bold border-2 transition-all',
+              'px-4 py-2 text-sm font-medium rounded-lg border transition-colors cursor-pointer',
               category === cat.value
-                ? 'bg-gum-pink text-white border-gum-black shadow-brutal-sm'
-                : 'bg-bg-card text-text-secondary border-gum-black/20 hover:border-gum-black',
+                ? 'bg-gum-pink text-white border-gum-pink'
+                : 'bg-bg-card text-text-secondary border-border hover:bg-bg-subtle',
             )}
           >
             {cat.label}
@@ -182,15 +176,13 @@ export default function FeedbacksClient() {
       {loading ? (
         <div className="flex items-center justify-center py-20"><LoadingSpinner size="lg" /></div>
       ) : feedbacks.length === 0 ? (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center py-20">
-          <motion.div animate={{ y: [0, -8, 0], rotate: [0, 5, -5, 0] }} transition={{ duration: 3, repeat: Infinity }} className="mb-6">
-            <div className="w-20 h-20 border-3 border-gum-black bg-gum-blue/20 shadow-brutal flex items-center justify-center empty-icon">
-              <MessageSquare className="w-10 h-10 text-gum-blue" />
-            </div>
-          </motion.div>
-          <p className="font-display text-xl text-gum-black mb-2">피드백이 없어요!</p>
+        <div className="flex flex-col items-center py-20">
+          <div className="w-16 h-16 rounded-2xl bg-gum-pink/10 flex items-center justify-center mb-6">
+            <MessageSquare className="w-8 h-8 text-gum-pink" />
+          </div>
+          <p className="text-lg font-semibold text-text-primary mb-2">피드백이 없어요!</p>
           <p className="text-sm text-text-secondary">아직 접수된 피드백이 없습니다.</p>
-        </motion.div>
+        </div>
       ) : filtered.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
           <p className="text-text-secondary">필터 조건에 맞는 피드백이 없어요.</p>

@@ -112,14 +112,14 @@ function ItemPreview({ draw }: { draw: LuckyDraw }) {
 /* ═══ cotton-candy 전용 서브 컴포넌트 ═══ */
 
 function CandyItemPreview({ draw }: { draw: LuckyDraw }) {
-  const items = (draw.items ?? []).slice(0, 8);
+  const items = draw.items ?? [];
   if (items.length === 0) return null;
   return (
-    <div className="flex flex-wrap justify-center gap-2 max-w-xs">
+    <div className="flex flex-wrap justify-center gap-2 max-w-md">
       {items.map((item, i) => (
         <motion.div
           key={item.id}
-          className="px-3 py-1.5 rounded-full border border-border bg-bg-card/80 backdrop-blur-sm shadow-card text-sm font-body text-text-primary flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-full border border-[rgba(100,200,176,0.2)] bg-bg-card/80 backdrop-blur-sm text-sm font-body text-text-primary flex items-center gap-1.5"
           style={{ animation: `bubble-float ${3 + Math.random() * 2}s ease-in-out ${i * 0.3}s infinite` }}
         >
           {item.imageUrl ? (
@@ -127,7 +127,7 @@ function CandyItemPreview({ draw }: { draw: LuckyDraw }) {
           ) : (
             <span className="text-accent-primary font-display text-xs">{item.name.charAt(0)}</span>
           )}
-          <span className="truncate max-w-[60px]">{item.name}</span>
+          <span>{item.name}</span>
         </motion.div>
       ))}
     </div>
@@ -135,20 +135,19 @@ function CandyItemPreview({ draw }: { draw: LuckyDraw }) {
 }
 
 function CandyBurst() {
-  const symbols = ['♡', '✦', '★', '♡', '✦', '★', '♡', '✦', '★', '♡', '✦', '★'];
-  const colors = ['var(--color-accent-primary)', 'var(--color-accent-secondary)'];
+  const emojis = ['💖', '✨', '⭐', '💗', '🌸', '💫', '💖', '✨', '⭐', '💗', '🌸', '💫'];
   return (
     <div className="relative w-48 h-48">
-      {/* 핑크 방사형 글로우 펄스 */}
+      {/* 방사형 글로우 펄스 */}
       <motion.div
         className="absolute inset-0 rounded-full"
-        style={{ background: 'radial-gradient(circle, rgba(255,111,168,0.3) 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, rgba(125,212,190,0.3) 0%, transparent 70%)' }}
         animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0.2, 0.6] }}
         transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
       />
-      {/* 심볼 폭발 */}
-      {symbols.map((s, i) => {
-        const angle = (i / symbols.length) * Math.PI * 2;
+      {/* 이모지 폭발 */}
+      {emojis.map((e, i) => {
+        const angle = (i / emojis.length) * Math.PI * 2;
         const tx = Math.cos(angle) * 90;
         const ty = Math.sin(angle) * 90;
         return (
@@ -160,7 +159,6 @@ function CandyBurst() {
               top: '50%',
               marginLeft: -10,
               marginTop: -10,
-              color: colors[i % 2],
             }}
             animate={{
               x: [0, tx, tx],
@@ -175,11 +173,55 @@ function CandyBurst() {
               ease: 'easeOut',
             }}
           >
-            {s}
+            {e}
           </motion.span>
         );
       })}
     </div>
+  );
+}
+
+function CandyConfetti() {
+  const emojis = ['💖', '✨', '🌸', '💗', '⭐', '💫', '🎀', '💖', '✨', '🌸',
+    '💗', '⭐', '💫', '🎀', '💖', '✨', '🌸', '💗', '⭐', '💫',
+    '🎀', '💖', '✨', '🌸', '💗', '⭐', '💫', '🎀', '💖', '✨'];
+  return (
+    <>
+      {emojis.map((emoji, i) => {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 150 + Math.random() * 250;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance - 60;
+        return (
+          <motion.span
+            key={i}
+            className="absolute pointer-events-none"
+            style={{
+              fontSize: 14 + Math.random() * 10,
+              left: '50%',
+              top: '40%',
+              marginLeft: -10,
+              marginTop: -10,
+            }}
+            initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
+            animate={{
+              x: tx,
+              y: ty + Math.random() * 100,
+              scale: [0, 1.3, 0.8],
+              rotate: 360 * (Math.random() > 0.5 ? 1 : -1),
+              opacity: [1, 1, 0],
+            }}
+            transition={{
+              duration: 1.5 + Math.random() * 1,
+              delay: Math.random() * 0.3,
+              ease: 'easeOut',
+            }}
+          >
+            {emoji}
+          </motion.span>
+        );
+      })}
+    </>
   );
 }
 
@@ -215,7 +257,7 @@ function HeartPopDecorations() {
             damping: 15,
           }}
         >
-          ♡
+          💖
         </motion.span>
       ))}
     </>
@@ -424,7 +466,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                     </div>
                   </div>
                   <div className="flex justify-center">
-                    <Button variant="secondary" onClick={handleReset}>
+                    <Button variant="primary" onClick={handleReset}>
                       <RotateCcw className="w-4 h-4" /> 다시 뽑기
                     </Button>
                   </div>
@@ -479,12 +521,12 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                 className="flex flex-col items-center gap-8">
                 <CandyBurst />
                 <motion.p
-                  className="font-display text-xl italic"
+                  className="font-display text-xl"
                   style={{ color: 'var(--color-accent-primary)' }}
                   animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
                   transition={{ duration: 1.2, repeat: Infinity }}
                 >
-                  두근두근... ♡
+                  두근두근... 💗
                 </motion.p>
               </motion.div>
             )}
@@ -493,10 +535,11 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
             {!isDrawing && lastResult && (
               <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="flex flex-col items-center gap-8 relative w-full">
+                <CandyConfetti />
                 {/* 타이틀 */}
                 <motion.div initial={{ scale: 0, rotate: -5 }} animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: 'spring', stiffness: 180, damping: 14 }} className="text-center">
-                  <p className="font-display text-4xl italic mb-2" style={{ color: 'var(--color-accent-primary)' }}>당첨! ♡</p>
+                  <p className="font-display text-4xl mb-2" style={{ color: 'var(--color-accent-primary)' }}>당첨! 🎉</p>
                 </motion.div>
 
                 {/* 결과 카드 + heart-pop 데코 */}
@@ -506,20 +549,18 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 180, damping: 16, delay: 0.2 }}
                 >
-                  <HeartPopDecorations />
-                  <GlassCard glow="rose" className="flex flex-col items-center gap-5 p-8 min-w-[240px]"
-                    style={{ boxShadow: 'var(--shadow-glow-primary)' }}>
+                  <GlassCard glow="rose" className="flex flex-col items-center gap-5 p-8 min-w-[240px]">
                     {lastResult.item.imageUrl ? (
                       <div
                         className="w-36 h-36 rounded-full overflow-hidden"
-                        style={{ border: '3px solid var(--color-accent-primary)' }}
+                        style={{ border: '1px solid rgba(100, 200, 176, 0.3)' }}
                       >
                         <img src={lastResult.item.imageUrl} alt={lastResult.item.name} className="w-full h-full object-cover" />
                       </div>
                     ) : (
                       <div
                         className="w-36 h-36 rounded-full flex items-center justify-center bg-accent-tertiary/30"
-                        style={{ border: '3px solid var(--color-accent-primary)' }}
+                        style={{ border: '1px solid rgba(100, 200, 176, 0.3)' }}
                       >
                         <span className="text-6xl font-display" style={{ color: 'var(--color-accent-primary)' }}>
                           {lastResult.item.name.charAt(0)}
@@ -534,7 +575,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
 
                 {/* 다시 뽑기 버튼 */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-                  <Button variant="secondary" onClick={handleReset}>
+                  <Button variant="primary" onClick={handleReset}>
                     <RotateCcw className="w-4 h-4" /> 다시 뽑기
                   </Button>
                 </motion.div>

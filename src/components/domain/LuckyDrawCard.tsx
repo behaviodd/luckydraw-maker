@@ -74,10 +74,10 @@ export function LuckyDrawCard({ draw, index, onDelete, onDuplicate }: LuckyDrawC
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Badge className="bg-gum-green/15 text-gum-green border-gum-green">
+              <Badge className="bg-[#1a9a6a]/15 text-[#1a9a6a] border-[#1a9a6a] shadow-brutal-sm">
                 <Sparkles className="w-3 h-3 mr-1" />{itemCount}개 아이템
               </Badge>
-              <Badge variant={draw.probabilityMode === 'equal' ? 'sky' : 'rose'}>
+              <Badge className="bg-[#1a9a6a]/15 text-[#1a9a6a] border-[#1a9a6a] shadow-brutal-sm">
                 {draw.probabilityMode === 'equal' ? '균등확률' : '차등확률'}
               </Badge>
             </div>

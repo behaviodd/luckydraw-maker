@@ -294,49 +294,49 @@ input::placeholder, textarea::placeholder {
    파스텔 핑크 · 라벤더 · 크림
    ═══════════════════════════════════════════════════ */
 [data-theme="cotton-candy"] {
-  /* ── 배경 (라즈베리 크림 스펙트럼) ── */
-  --color-bg-main: #FFF0F5;
-  --color-bg-warm: #FFF8FA;
+  /* ── 배경 (민트 크림 스펙트럼) ── */
+  --color-bg-main: #F0FFF8;
+  --color-bg-warm: #F8FFFC;
   --color-bg-card: #FFFFFF;
-  --color-bg-subtle: #FFF5F9;
+  --color-bg-subtle: #F5FFFA;
 
   /* ── 팔레트 (파스텔 리매핑) ── */
-  --color-gum-pink: #FF6FA8;
-  --color-gum-hotpink: #FF4D94;
-  --color-gum-black: #5C3353;
-  --color-gum-dark: #7B5070;
-  --color-gum-yellow: #FFD3A8;
-  --color-gum-green: #A8E6CF;
-  --color-gum-blue: #B8D4F0;
-  --color-gum-purple: #C9A8E2;
-  --color-gum-coral: #FF8FAB;
-  --color-gum-orange: #FFD3A8;
-  --color-gum-mint: #A8E6CF;
-  --color-gum-cream: #FFDDE1;
+  --color-gum-pink: #7DD4BE;
+  --color-gum-hotpink: #5CC4AA;
+  --color-gum-black: #6B4562;
+  --color-gum-dark: #8E6583;
+  --color-gum-yellow: #FFE0C0;
+  --color-gum-green: #C0F0DE;
+  --color-gum-blue: #D0E4F8;
+  --color-gum-purple: #DCC0EE;
+  --color-gum-coral: #B05050;
+  --color-gum-orange: #FFE0C0;
+  --color-gum-mint: #C0F0DE;
+  --color-gum-cream: #E0F8F0;
 
-  /* ── 텍스트 (딥 베리 계열) ── */
-  --color-text-primary: #5C3353;
-  --color-text-secondary: #A67C96;
-  --color-text-muted: #C9A8CB;
-  --color-border: rgba(255, 160, 200, 0.4);
+  /* ── 텍스트 (딥 민트 계열 · WCAG AA 준수) ── */
+  --color-text-primary: #2D5C4F;
+  --color-text-secondary: #4A7A6A;
+  --color-text-muted: #5E8E7E;
+  --color-border: rgba(100, 200, 176, 0.3);
 
   /* ── 시맨틱 테마 변수 ── */
-  --color-bg-base: #FFF0F5;
-  --color-bg-elevated: #FCD5E5;
+  --color-bg-base: #F0FFF8;
+  --color-bg-elevated: #D8F5EA;
   --color-text-on-dark: #FFFFFF;
-  --color-text-on-dark-sub: #FFD1E8;
-  --color-accent-primary: #FF6FA8;
-  --color-accent-secondary: #C9A8E2;
-  --color-accent-tertiary: #FFDDE1;
+  --color-text-on-dark-sub: #D0FFE8;
+  --color-accent-primary: #7DD4BE;
+  --color-accent-secondary: #B0E0D0;
+  --color-accent-tertiary: #E0F8F0;
   --color-border-light: rgba(255, 255, 255, 0.8);
-  --color-success: #A8E6CF;
-  --color-warning: #FFD3A8;
-  --color-error: #FF8FAB;
+  --color-success: #C0F0DE;
+  --color-warning: #FFE0C0;
+  --color-error: #B05050;
 
-  /* ── 폰트 (dark-glass 와 동일) ── */
-  --font-display: 'Bagel Fat One', cursive;
-  --font-body: 'Gothic A1', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  /* ── 폰트 (IBM Plex Sans KR) ── */
+  --font-display: 'IBM Plex Sans KR', sans-serif;
+  --font-body: 'IBM Plex Sans KR', sans-serif;
+  --font-mono: 'IBM Plex Sans KR', monospace;
 
   /* ── 레이아웃 (몽글몽글 라운드) ── */
   --radius-card: 24px;
@@ -344,36 +344,36 @@ input::placeholder, textarea::placeholder {
   --blur-glass: 12px;
 
   /* ── 배경 효과 ── */
-  --bg-gradient-base: radial-gradient(ellipse at 30% 20%, #FFDDE1 0%, #FFF0F5 50%, #EEE0FF 100%);
+  --bg-gradient-base: radial-gradient(ellipse at 30% 20%, #E0F8F0 0%, #F5FFFA 50%, #EEFFF5 100%);
 
   /* ── 그림자 (소프트 드롭쉐도우) ── */
   --shadow-card:
-    0 4px 24px rgba(255, 100, 150, 0.12),
-    0 1px 4px rgba(255, 100, 150, 0.08);
+    0 4px 24px rgba(100, 200, 176, 0.08),
+    0 1px 4px rgba(100, 200, 176, 0.05);
   --shadow-glow-primary:
-    0 0 24px rgba(255, 111, 168, 0.35),
-    0 0 48px rgba(255, 111, 168, 0.1);
+    0 0 24px rgba(125, 212, 190, 0.25),
+    0 0 48px rgba(125, 212, 190, 0.08);
   --shadow-glow-secondary:
-    0 0 20px rgba(201, 168, 226, 0.3);
+    0 0 20px rgba(176, 224, 208, 0.2);
   --shadow-draw-button:
-    0 0 32px rgba(255, 111, 168, 0.5),
-    0 8px 32px rgba(255, 111, 168, 0.25),
+    0 0 32px rgba(125, 212, 190, 0.35),
+    0 8px 32px rgba(125, 212, 190, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
   --shadow-brutal:
-    0 4px 16px rgba(255, 100, 150, 0.12);
+    0 4px 16px rgba(100, 200, 176, 0.08);
   --shadow-brutal-lg:
-    0 6px 24px rgba(255, 100, 150, 0.18);
+    0 6px 24px rgba(100, 200, 176, 0.12);
   --shadow-brutal-sm:
-    0 2px 8px rgba(255, 100, 150, 0.1);
+    0 2px 8px rgba(100, 200, 176, 0.06);
   --shadow-brutal-pink:
-    0 4px 16px rgba(255, 111, 168, 0.2);
+    0 4px 16px rgba(125, 212, 190, 0.15);
   --shadow-brutal-yellow:
-    0 4px 16px rgba(255, 211, 168, 0.2);
+    0 4px 16px rgba(255, 224, 192, 0.15);
 }
 
 /* ── cotton-candy body 배경 (방사형 그라디언트) ── */
 [data-theme="cotton-candy"] body {
-  background: radial-gradient(ellipse at 30% 20%, #FFE8EE 0%, #FFF5F9 50%, #F5EEFF 100%);
+  background: radial-gradient(ellipse at 30% 20%, #EEFFF6 0%, #F8FFFC 50%, #F0FFF8 100%);
 }
 
 /* ── cotton-candy input (소프트 스타일) ── */
@@ -389,7 +389,7 @@ input::placeholder, textarea::placeholder {
 [data-theme="cotton-candy"] input:focus,
 [data-theme="cotton-candy"] textarea:focus,
 [data-theme="cotton-candy"] select:focus {
-  box-shadow: 0 0 0 3px rgba(255, 111, 168, 0.2);
+  box-shadow: 0 0 0 3px rgba(125, 212, 190, 0.2);
   border-color: var(--color-accent-primary);
   transform: none;
 }
@@ -400,15 +400,15 @@ input::placeholder, textarea::placeholder {
 
 /* ── cotton-candy 텍스트 셀렉션 ── */
 [data-theme="cotton-candy"] ::selection {
-  background: #FF6FA8;
+  background: #7DD4BE;
   color: #FFFFFF;
 }
 
 /* ── cotton-candy scrollbar ── */
-[data-theme="cotton-candy"]::-webkit-scrollbar-track { background: #FFF5F9; }
+[data-theme="cotton-candy"]::-webkit-scrollbar-track { background: #F5FFFA; }
 [data-theme="cotton-candy"]::-webkit-scrollbar-thumb {
-  background: rgba(255, 160, 200, 0.5);
-  border: 2px solid #FFF0F5;
+  background: rgba(100, 200, 176, 0.35);
+  border: 2px solid #F0FFF8;
   border-radius: 10px;
 }
 
@@ -428,18 +428,18 @@ input::placeholder, textarea::placeholder {
 /* ── glass-card의 cotton-candy 오버라이드 ── */
 [data-theme="cotton-candy"] .glass-card {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(255, 160, 200, 0.2);
+  border: 1px solid rgba(100, 200, 176, 0.15);
   border-radius: var(--radius-card);
-  box-shadow: 0 2px 16px rgba(255, 100, 150, 0.06);
+  box-shadow: 0 2px 16px rgba(100, 200, 176, 0.04);
   backdrop-filter: blur(8px);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* ── badge의 cotton-candy 오버라이드 ── */
 [data-theme="cotton-candy"] .badge {
-  background: var(--color-accent-tertiary);
-  color: var(--color-accent-primary);
-  border-color: var(--color-accent-tertiary);
+  background: rgba(90, 170, 220, 0.12);
+  color: #5AAADC;
+  border-color: rgba(90, 170, 220, 0.25);
   border-radius: 50px;
   box-shadow: none;
 }
@@ -447,9 +447,9 @@ input::placeholder, textarea::placeholder {
 /* ── brutal-card의 cotton-candy 오버라이드 ── */
 [data-theme="cotton-candy"] .brutal-card {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(255, 160, 200, 0.2);
+  border: 1px solid rgba(100, 200, 176, 0.15);
   border-radius: var(--radius-card);
-  box-shadow: 0 2px 16px rgba(255, 100, 150, 0.06);
+  box-shadow: 0 2px 16px rgba(100, 200, 176, 0.04);
 }
 
 /* ── cotton-candy 전용 키프레임 ── */
@@ -467,8 +467,8 @@ input::placeholder, textarea::placeholder {
 
 @keyframes candy-shimmer {
   0%   { box-shadow: var(--shadow-draw-button); }
-  50%  { box-shadow: 0 0 48px rgba(255, 111, 168, 0.75),
-                     0 8px 48px rgba(201, 168, 226, 0.4),
+  50%  { box-shadow: 0 0 48px rgba(125, 212, 190, 0.5),
+                     0 8px 48px rgba(176, 224, 208, 0.3),
                      inset 0 1px 0 rgba(255, 255, 255, 0.7); }
   100% { box-shadow: var(--shadow-draw-button); }
 }
@@ -477,6 +477,11 @@ input::placeholder, textarea::placeholder {
   0% { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 1; }
   50% { transform: translateY(50vh) rotate(180deg) scale(0.8); opacity: 0.8; }
   100% { transform: translateY(100vh) rotate(360deg) scale(0.6); opacity: 0; }
+}
+
+/* ── cotton-candy: 타이틀·버튼 semi-bold ── */
+[data-theme="cotton-candy"] .font-display {
+  font-weight: 600;
 }
 
 /* ── cotton-candy 드로우 버튼 반짝임 ── */
@@ -493,27 +498,27 @@ input::placeholder, textarea::placeholder {
 /* ── cotton-candy: glass-card 소프트 호버 ── */
 [data-theme="cotton-candy"] .glass-card:hover {
   transform: translateY(-3px) !important;
-  box-shadow: 0 8px 32px rgba(255, 100, 150, 0.12) !important;
+  box-shadow: 0 8px 32px rgba(100, 200, 176, 0.08) !important;
 }
 
 /* ── cotton-candy: 컨텍스트 메뉴 / 드롭다운 ── */
 [data-theme="cotton-candy"] .ctx-menu {
-  border: 1px solid rgba(255, 160, 200, 0.25) !important;
+  border: 1px solid rgba(100, 200, 176, 0.2) !important;
   border-radius: 16px !important;
-  box-shadow: 0 8px 32px rgba(255, 100, 150, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(100, 200, 176, 0.06) !important;
   background: rgba(255, 255, 255, 0.98) !important;
   overflow: hidden;
 }
 
 /* ── cotton-candy: 슬라이드 패널 ── */
 [data-theme="cotton-candy"] .slide-panel {
-  border-left: 1px solid rgba(255, 160, 200, 0.2) !important;
+  border-left: 1px solid rgba(100, 200, 176, 0.15) !important;
   background: rgba(255, 255, 255, 0.98) !important;
 }
 
 /* ── cotton-candy: 패널 헤더 ── */
 [data-theme="cotton-candy"] .panel-header {
-  border-bottom: 1px solid rgba(255, 160, 200, 0.15) !important;
+  border-bottom: 1px solid rgba(100, 200, 176, 0.1) !important;
   background: rgba(255, 255, 255, 0.95) !important;
 }
 
@@ -521,22 +526,34 @@ input::placeholder, textarea::placeholder {
 [data-theme="cotton-candy"] .empty-icon {
   border-radius: 50% !important;
   border-width: 1px !important;
-  border-color: rgba(255, 160, 200, 0.3) !important;
-  box-shadow: 0 4px 16px rgba(255, 100, 150, 0.1) !important;
+  border-color: rgba(100, 200, 176, 0.2) !important;
+  box-shadow: 0 4px 16px rgba(100, 200, 176, 0.06) !important;
 }
 
 /* ── cotton-candy: prose 이미지 소프트 ── */
 [data-theme="cotton-candy"] .prose img {
   border-width: 1px !important;
-  border-color: rgba(255, 160, 200, 0.3) !important;
+  border-color: rgba(100, 200, 176, 0.2) !important;
   border-radius: 16px !important;
-  box-shadow: 0 4px 16px rgba(255, 100, 150, 0.1) !important;
+  box-shadow: 0 4px 16px rgba(100, 200, 176, 0.06) !important;
 }
 
 /* ── cotton-candy: 모달 오버레이 (부드러운 핑크 블러) ── */
 [data-theme="cotton-candy"] .modal-overlay {
-  background: rgba(255, 200, 220, 0.3) !important;
+  background: rgba(180, 230, 215, 0.3) !important;
   backdrop-filter: blur(8px);
+}
+
+/* ── brutal-card의 retro-pc 오버라이드 ── */
+[data-theme="retro-pc"] .brutal-card {
+  border-width: 1px;
+}
+
+/* ── retro-pc badge 오버라이드 ── */
+[data-theme="retro-pc"] .badge {
+  background: rgba(0, 255, 255, 0.1);
+  color: #00FFFF;
+  border-color: #00FFFF;
 }
 
 /* ── retro-pc 글로벌 오버라이드 ── */
@@ -660,4 +677,171 @@ input::placeholder, textarea::placeholder {
 /* retro-pc 모달 오버레이 */
 [data-theme="retro-pc"] .modal-overlay {
   background: rgba(0, 0, 0, 0.7);
+}
+
+/* ═══════════════════════════════════════════════════
+   관리자 TDS (토스 디자인 시스템) 오버라이드
+   Pretendard 폰트 · 클린 미니멀 · 테마 독립
+   ═══════════════════════════════════════════════════ */
+[data-admin] {
+  /* ── 배경 ── */
+  --color-bg-main: #F2F4F6;
+  --color-bg-warm: #F7F8FA;
+  --color-bg-card: #FFFFFF;
+  --color-bg-subtle: #F2F4F6;
+
+  /* ── 팔레트 (토스 블루 기반) ── */
+  --color-gum-pink: #3182F6;
+  --color-gum-hotpink: #1B64DA;
+  --color-gum-black: #191F28;
+  --color-gum-dark: #333D4B;
+  --color-gum-yellow: #F59F00;
+  --color-gum-green: #00C471;
+  --color-gum-blue: #3182F6;
+  --color-gum-purple: #8B5CF6;
+  --color-gum-coral: #F04452;
+  --color-gum-orange: #F59F00;
+  --color-gum-mint: #00C471;
+  --color-gum-cream: #F7F8FA;
+
+  /* ── 텍스트 ── */
+  --color-text-primary: #191F28;
+  --color-text-secondary: #4E5968;
+  --color-text-muted: #8B95A1;
+  --color-border: #E5E8EB;
+
+  /* ── 시맨틱 ── */
+  --color-bg-base: #F2F4F6;
+  --color-bg-elevated: #FFFFFF;
+  --color-text-on-dark: #FFFFFF;
+  --color-text-on-dark-sub: #B0B8C1;
+  --color-accent-primary: #3182F6;
+  --color-accent-secondary: #4E5968;
+  --color-accent-tertiary: #F2F4F6;
+  --color-border-light: rgba(0, 0, 0, 0.04);
+  --color-success: #00C471;
+  --color-warning: #F59F00;
+  --color-error: #F04452;
+
+  /* ── 폰트 (Pretendard 고정) ── */
+  --font-display: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* ── 레이아웃 ── */
+  --radius-card: 16px;
+  --blur-glass: 0px;
+  --bg-gradient-base: #F2F4F6;
+
+  /* ── 그림자 (소프트 드롭쉐도우) ── */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-brutal: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-brutal-lg: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-brutal-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-brutal-pink: 0 0 0 2px rgba(49,130,246,0.15);
+  --shadow-brutal-yellow: 0 0 0 2px rgba(245,159,0,0.15);
+  --shadow-glow-primary: 0 0 0 3px rgba(49,130,246,0.12);
+  --shadow-glow-secondary: none;
+}
+
+/* ── 관리자 전역 폰트 강제 ── */
+[data-admin],
+[data-admin] * {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+}
+
+/* ── 관리자 카드 오버라이드 ── */
+[data-admin] .brutal-card,
+[data-admin] .glass-card {
+  border: 1px solid #E5E8EB;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  background: #FFFFFF;
+}
+
+[data-admin] .glass-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+}
+
+/* ── 관리자 인풋 ── */
+[data-admin] input,
+[data-admin] textarea,
+[data-admin] select {
+  border: 1px solid #E5E8EB;
+  border-radius: 10px;
+  box-shadow: none;
+  background: #FFFFFF;
+  color: #191F28;
+}
+
+[data-admin] input:focus,
+[data-admin] textarea:focus,
+[data-admin] select:focus {
+  border-color: #3182F6;
+  box-shadow: 0 0 0 3px rgba(49,130,246,0.12);
+  transform: none;
+}
+
+[data-admin] input::placeholder,
+[data-admin] textarea::placeholder {
+  color: #8B95A1;
+}
+
+/* ── 관리자 텍스트 셀렉션 ── */
+[data-admin] ::selection {
+  background: #3182F6;
+  color: #FFFFFF;
+}
+
+/* ── 관리자 배지 ── */
+[data-admin] .badge {
+  border-radius: 6px;
+  border-width: 1px;
+  box-shadow: none;
+}
+
+/* ── 관리자 스크롤바 ── */
+[data-admin]::-webkit-scrollbar-track { background: #F2F4F6; }
+[data-admin]::-webkit-scrollbar-thumb {
+  background: #D1D6DB;
+  border: 1px solid #F2F4F6;
+  border-radius: 4px;
+}
+
+/* ── 관리자 brutal 그림자 유틸리티 제거 ── */
+[data-admin] [class*="shadow-brutal"] {
+  --tw-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* ── 관리자 두꺼운 테두리 보정 ── */
+[data-admin] [class*="border-2"],
+[data-admin] [class*="border-3"],
+[data-admin] [class*="border-4"] {
+  border-width: 1px !important;
+}
+
+/* ── 관리자 accent-bar 숨김 ── */
+[data-admin] .accent-bar {
+  display: none;
+}
+
+/* ── 관리자 retro-button 무력화 ── */
+[data-admin] .retro-button {
+  border: 1px solid #E5E8EB !important;
+  background: #FFFFFF !important;
+  color: #191F28 !important;
+  border-radius: 10px !important;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+}
+
+/* ── 관리자 버튼 기본 스타일 (animate-wiggle 등 사용자 효과 제거) ── */
+[data-admin] button {
+  animation: none !important;
+}
+
+/* ── 관리자 모달 ── */
+[data-admin] .modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
 }

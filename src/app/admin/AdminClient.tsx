@@ -85,29 +85,33 @@ export default function AdminClient() {
     <main className="max-w-5xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-3xl text-gum-black mb-1">공지사항 관리</h1>
+          <h1 className="text-2xl font-bold text-text-primary mb-1">공지사항 관리</h1>
           <p className="text-sm text-text-secondary">공지를 작성하고 발행 상태를 관리하세요</p>
         </div>
-        <Button variant="primary" onClick={() => router.push('/admin/announcements/new')}>
+        <button
+          onClick={() => router.push('/admin/announcements/new')}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gum-pink rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+        >
           <Plus className="w-4 h-4" /> 새 공지 작성
-        </Button>
+        </button>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20"><LoadingSpinner size="lg" /></div>
       ) : announcements.length === 0 ? (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center py-20">
-          <motion.div animate={{ y: [0, -8, 0], rotate: [0, 5, -5, 0] }} transition={{ duration: 3, repeat: Infinity }} className="mb-6">
-            <div className="w-20 h-20 border-3 border-gum-black bg-gum-purple/20 shadow-brutal flex items-center justify-center empty-icon">
-              <Megaphone className="w-10 h-10 text-gum-purple" />
-            </div>
-          </motion.div>
-          <p className="font-display text-xl text-gum-black mb-2">공지사항이 없어요!</p>
+        <div className="flex flex-col items-center py-20">
+          <div className="w-16 h-16 rounded-2xl bg-gum-pink/10 flex items-center justify-center mb-6">
+            <Megaphone className="w-8 h-8 text-gum-pink" />
+          </div>
+          <p className="text-lg font-semibold text-text-primary mb-2">공지사항이 없어요!</p>
           <p className="text-sm text-text-secondary mb-8">첫 번째 공지를 작성해볼까요?</p>
-          <Button variant="primary" onClick={() => router.push('/admin/announcements/new')}>
+          <button
+            onClick={() => router.push('/admin/announcements/new')}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gum-pink rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+          >
             <Plus className="w-4 h-4" /> 작성 시작
-          </Button>
-        </motion.div>
+          </button>
+        </div>
       ) : (
         <div className="flex flex-col gap-4">
           {announcements.map((a, index) => (
@@ -117,15 +121,11 @@ export default function AdminClient() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.06, duration: 0.3 }}
             >
-              <GlassCard className="hover:shadow-brutal-lg hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all duration-200">
-                <div className="overflow-hidden -mx-6 -mt-6 mb-4 accent-bar">
-                  <div className={`h-2 ${a.isPinned ? 'bg-gum-yellow' : a.isPublished ? 'bg-gum-green' : 'bg-gum-black/20'}`} />
-                </div>
-
+              <GlassCard className="transition-all duration-200 hover:shadow-md">
                 <div className="flex items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="font-display text-lg text-gum-black leading-snug truncate">{a.title}</h3>
+                      <h3 className="font-semibold text-base text-text-primary leading-snug truncate">{a.title}</h3>
                       {a.isPinned && (
                         <Badge className="bg-gum-yellow/15 text-gum-yellow border-gum-yellow">
                           <Pin className="w-3 h-3 mr-1" />고정
@@ -174,18 +174,18 @@ export default function AdminClient() {
 
       <Dialog.Root open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-gum-black/40 z-50" />
+          <Dialog.Overlay className="fixed inset-0 bg-black/30 z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100vw-3rem)] max-w-sm">
             <AnimatePresence>
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
-                <GlassCard className="w-full p-8">
-                  <Dialog.Title className="font-display text-xl text-gum-coral mb-2">공지를 삭제할까요?</Dialog.Title>
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
+                <div className="w-full p-8 bg-bg-card rounded-2xl shadow-lg border border-border">
+                  <Dialog.Title className="text-lg font-bold text-gum-coral mb-2">공지를 삭제할까요?</Dialog.Title>
                   <Dialog.Description className="text-sm text-text-secondary mb-6">이 작업은 되돌릴 수 없어요!</Dialog.Description>
                   <div className="flex gap-3">
-                    <Button variant="secondary" className="flex-1" onClick={() => setDeleteTarget(null)}>취소</Button>
-                    <Button variant="danger" className="flex-1" onClick={handleDeleteConfirm}>삭제하기</Button>
+                    <button className="flex-1 px-4 py-2.5 text-sm font-semibold text-text-secondary bg-bg-subtle rounded-lg hover:bg-border transition-colors cursor-pointer" onClick={() => setDeleteTarget(null)}>취소</button>
+                    <button className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-gum-coral rounded-lg hover:opacity-90 transition-opacity cursor-pointer" onClick={handleDeleteConfirm}>삭제하기</button>
                   </div>
-                </GlassCard>
+                </div>
               </motion.div>
             </AnimatePresence>
           </Dialog.Content>

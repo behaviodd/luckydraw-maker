@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useUIStore } from '@/stores/uiStore';
+import { useAdminFeedbackStore } from '@/stores/adminFeedbackStore';
 import type { Feedback, FeedbackCategory } from '@/types';
 
 function mapFeedback(row: Record<string, unknown>): Feedback {
@@ -23,6 +24,8 @@ export function useAdminFeedbacks() {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
   const addToast = useUIStore((s) => s.addToast);
+  const setUnreadCount = useAdminFeedbackStore((s) => s.setUnreadCount);
+  const decrementUnread = useAdminFeedbackStore((s) => s.decrementUnread);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -34,10 +37,12 @@ export function useAdminFeedbacks() {
     if (error) {
       addToast({ type: 'error', message: '피드백을 불러오지 못했어요' });
     } else {
-      setFeedbacks((data ?? []).map(mapFeedback));
+      const mapped = (data ?? []).map(mapFeedback);
+      setFeedbacks(mapped);
+      setUnreadCount(mapped.filter((f: Feedback) => !f.isRead).length);
     }
     setLoading(false);
-  }, [supabase, addToast]);
+  }, [supabase, addToast, setUnreadCount]);
 
   useEffect(() => {
     fetchAll();
@@ -51,6 +56,7 @@ export function useAdminFeedbacks() {
       setFeedbacks((prev) =>
         prev.map((f) => (f.id === id ? { ...f, isRead: true } : f)),
       );
+      decrementUnread();
 
       const { error } = await supabase
         .from('feedbacks')
@@ -59,12 +65,14 @@ export function useAdminFeedbacks() {
 
       if (error) {
         // 롤백
-        setFeedbacks((prev) =>
-          prev.map((f) => (f.id === id ? { ...f, isRead: false } : f)),
-        );
+        setFeedbacks((prev) => {
+          const rolled = prev.map((f) => (f.id === id ? { ...f, isRead: false } : f));
+          setUnreadCount(rolled.filter((f) => !f.isRead).length);
+          return rolled;
+        });
       }
     },
-    [supabase],
+    [supabase, decrementUnread, setUnreadCount],
   );
 
   return { feedbacks, loading, unreadCount, markAsRead, refetch: fetchAll };

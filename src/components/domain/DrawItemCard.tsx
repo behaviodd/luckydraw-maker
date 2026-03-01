@@ -4,6 +4,8 @@ import { Reorder, useDragControls } from 'framer-motion';
 import { GripVertical, Minus, Plus, Trash2 } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Button } from '@/components/ui/Button';
+import { useThemeStore } from '@/stores/themeStore';
+import { cn } from '@/lib/utils';
 import type { UseFormRegister, UseFormSetValue, UseFormWatch, FieldArrayWithId } from 'react-hook-form';
 import type { LuckyDrawFormInput } from '@/types';
 
@@ -24,6 +26,7 @@ export function DrawItemCard({
   index, field, register, setValue, watch, onRemove, probability, showProbability, isEditing, error,
 }: DrawItemCardProps) {
   const dragControls = useDragControls();
+  const isCottonCandy = useThemeStore((s) => s.currentTheme) === 'cotton-candy';
   const quantity = watch(`items.${index}.quantity`);
   const remaining = watch(`items.${index}.remaining`);
   const imageUrl = watch(`items.${index}.imageUrl`);
@@ -54,10 +57,18 @@ export function DrawItemCard({
         {error && <p className="text-xs text-gum-coral mt-1">{error}</p>}
         {showProbability && probability !== undefined && (
           <div className="flex items-center gap-2 mt-2">
-            <div className="flex-1 h-3 bg-bg-subtle border-2 border-gum-black overflow-hidden">
-              <div className="h-full bg-gum-pink transition-all" style={{ width: `${Math.min(probability, 100)}%` }} />
+            <div className={cn(
+              "flex-1 h-3 bg-bg-subtle overflow-hidden",
+              isCottonCandy
+                ? "border border-[rgba(100,200,176,0.3)] rounded-full"
+                : "border-2 border-gum-black"
+            )}>
+              <div className={cn("h-full transition-all", isCottonCandy ? "bg-accent-primary rounded-full" : "bg-gum-pink")} style={{ width: `${Math.min(probability, 100)}%` }} />
             </div>
-            <span className="text-xs text-gum-pink font-mono font-bold min-w-[44px] text-right">
+            <span className={cn(
+              "text-xs font-mono font-bold min-w-[44px] text-right",
+              isCottonCandy ? "text-text-primary" : "text-gum-pink"
+            )}>
               {probability.toFixed(1)}%
             </span>
           </div>
@@ -68,14 +79,24 @@ export function DrawItemCard({
         <div className="flex items-center gap-1">
           <button type="button"
             onClick={() => { if (quantity > 1) setValue(`items.${index}.quantity`, quantity - 1); }}
-            className="w-8 h-8 bg-bg-card border-2 border-gum-black flex items-center justify-center text-text-secondary hover:bg-gum-pink hover:text-white transition-colors shadow-brutal-sm">
+            className={cn(
+              "w-8 h-8 bg-bg-card flex items-center justify-center text-text-secondary hover:text-white transition-colors",
+              isCottonCandy
+                ? "border border-[rgba(100,200,176,0.3)] rounded-xl hover:bg-accent-primary"
+                : "border-2 border-gum-black shadow-brutal-sm hover:bg-gum-pink"
+            )}>
             <Minus className="w-3 h-3" />
           </button>
           <input type="number" {...register(`items.${index}.quantity`, { valueAsNumber: true })}
             className="w-14 text-center text-sm font-mono !py-1 !px-2" min={1} max={9999} />
           <button type="button"
             onClick={() => setValue(`items.${index}.quantity`, quantity + 1)}
-            className="w-8 h-8 bg-bg-card border-2 border-gum-black flex items-center justify-center text-text-secondary hover:bg-gum-pink hover:text-white transition-colors shadow-brutal-sm">
+            className={cn(
+              "w-8 h-8 bg-bg-card flex items-center justify-center text-text-secondary hover:text-white transition-colors",
+              isCottonCandy
+                ? "border border-[rgba(100,200,176,0.3)] rounded-xl hover:bg-accent-primary"
+                : "border-2 border-gum-black shadow-brutal-sm hover:bg-gum-pink"
+            )}>
             <Plus className="w-3 h-3" />
           </button>
         </div>
@@ -84,14 +105,24 @@ export function DrawItemCard({
             <span className="text-[10px] text-text-muted font-bold whitespace-nowrap">남은</span>
             <button type="button"
               onClick={() => { if (remaining > 0) setValue(`items.${index}.remaining`, remaining - 1); }}
-              className="w-6 h-6 bg-bg-card border-2 border-gum-black/50 flex items-center justify-center text-text-secondary hover:bg-gum-green hover:text-white transition-colors text-[10px]">
+              className={cn(
+                "w-6 h-6 bg-bg-card flex items-center justify-center text-text-secondary hover:text-white transition-colors text-[10px]",
+                isCottonCandy
+                  ? "border border-[rgba(100,200,176,0.3)] rounded-lg hover:bg-accent-primary"
+                  : "border-2 border-gum-black/50 hover:bg-gum-green"
+              )}>
               <Minus className="w-2.5 h-2.5" />
             </button>
             <input type="number" {...register(`items.${index}.remaining`, { valueAsNumber: true })}
-              className="w-12 text-center text-xs font-mono !py-0.5 !px-1 border-gum-black/50" min={0} max={quantity} />
+              className={cn("w-12 text-center text-xs font-mono !py-0.5 !px-1", isCottonCandy ? "" : "border-gum-black/50")} min={0} max={quantity} />
             <button type="button"
               onClick={() => { if (remaining < quantity) setValue(`items.${index}.remaining`, remaining + 1); }}
-              className="w-6 h-6 bg-bg-card border-2 border-gum-black/50 flex items-center justify-center text-text-secondary hover:bg-gum-green hover:text-white transition-colors text-[10px]">
+              className={cn(
+                "w-6 h-6 bg-bg-card flex items-center justify-center text-text-secondary hover:text-white transition-colors text-[10px]",
+                isCottonCandy
+                  ? "border border-[rgba(100,200,176,0.3)] rounded-lg hover:bg-accent-primary"
+                  : "border-2 border-gum-black/50 hover:bg-gum-green"
+              )}>
               <Plus className="w-2.5 h-2.5" />
             </button>
           </div>

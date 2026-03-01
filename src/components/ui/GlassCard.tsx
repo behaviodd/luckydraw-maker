@@ -3,6 +3,7 @@
 import { motion, type HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useThemeStore } from '@/stores/themeStore';
+import { useIsAdmin } from '@/contexts/AdminContext';
 
 type GlowColor = 'rose' | 'lavender' | 'sky';
 
@@ -25,9 +26,10 @@ const cottonGlowStyles: Record<GlowColor, string> = {
 };
 
 export function GlassCard({ glow, title, className, children, ...props }: GlassCardProps) {
+  const isAdmin = useIsAdmin();
   const currentTheme = useThemeStore((s) => s.currentTheme);
-  const isRetro = currentTheme === 'retro-pc';
-  const isCottonCandy = currentTheme === 'cotton-candy';
+  const isRetro = !isAdmin && currentTheme === 'retro-pc';
+  const isCottonCandy = !isAdmin && currentTheme === 'cotton-candy';
 
   const activeGlowStyles = isCottonCandy ? cottonGlowStyles : glowStyles;
 

@@ -11,11 +11,14 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useUIStore } from '@/stores/uiStore';
+import { useThemeStore } from '@/stores/themeStore';
+import { cn } from '@/lib/utils';
 
 export default function VaultDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { draw, loading } = useLuckyDraw(id, true);
   const addToast = useUIStore((s) => s.addToast);
+  const isCottonCandy = useThemeStore((s) => s.currentTheme) === 'cotton-candy';
 
   const handleShare = async () => {
     const url = `${window.location.origin}/play/${id}`;
@@ -45,7 +48,7 @@ export default function VaultDetailClient({ id }: { id: string }) {
       </div>
 
       <GlassCard className="mb-6">
-        <h2 className="font-display text-lg text-gum-pink mb-4">아이템 목록</h2>
+        <h2 className={cn("font-display text-lg mb-4", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>아이템 목록</h2>
         <div className="flex flex-col gap-3">
           {items.sort((a, b) => a.sortOrder - b.sortOrder).map((item, index) => {
             const availableItems = items.filter((i) => i.remaining > 0);
@@ -54,15 +57,30 @@ export default function VaultDetailClient({ id }: { id: string }) {
               : (1 / availableItems.length) * 100;
             return (
               <motion.div key={item.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-4 p-3 bg-bg-subtle border-2 border-gum-black shadow-brutal-sm">
-                <div className={`w-2 h-10 ${COLORS[index % COLORS.length]}`} />
+                className={cn(
+                  "flex items-center gap-4 p-3 bg-bg-subtle",
+                  isCottonCandy
+                    ? "border border-[rgba(100,200,176,0.15)] rounded-2xl"
+                    : "border-2 border-gum-black shadow-brutal-sm"
+                )}>
+                <div className={cn(`w-2 h-10 ${COLORS[index % COLORS.length]}`, isCottonCandy && "rounded-full")} />
                 {item.imageUrl ? (
-                  <div className="w-10 h-10 border-2 border-gum-black overflow-hidden shadow-brutal-sm">
+                  <div className={cn(
+                    "w-10 h-10 overflow-hidden",
+                    isCottonCandy
+                      ? "border border-[rgba(100,200,176,0.2)] rounded-xl"
+                      : "border-2 border-gum-black shadow-brutal-sm"
+                  )}>
                     <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="w-10 h-10 border-2 border-gum-black bg-bg-card flex items-center justify-center shadow-brutal-sm">
-                    <span className="text-sm font-display text-gum-pink">{item.name.charAt(0)}</span>
+                  <div className={cn(
+                    "w-10 h-10 bg-bg-card flex items-center justify-center",
+                    isCottonCandy
+                      ? "border border-[rgba(100,200,176,0.2)] rounded-xl"
+                      : "border-2 border-gum-black shadow-brutal-sm"
+                  )}>
+                    <span className={cn("text-sm font-display", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>{item.name.charAt(0)}</span>
                   </div>
                 )}
                 <div className="flex-1">
@@ -71,8 +89,13 @@ export default function VaultDetailClient({ id }: { id: string }) {
                 </div>
                 <div className="flex items-center gap-3">
                   {isWeighted && (
-                    <div className="w-24 h-3 bg-bg-card border-2 border-gum-black overflow-hidden">
-                      <motion.div className="h-full bg-gum-pink" initial={{ width: 0 }}
+                    <div className={cn(
+                      "w-24 h-3 bg-bg-card overflow-hidden",
+                      isCottonCandy
+                        ? "border border-[rgba(100,200,176,0.3)] rounded-full"
+                        : "border-2 border-gum-black"
+                    )}>
+                      <motion.div className={cn("h-full", isCottonCandy ? "bg-accent-primary rounded-full" : "bg-gum-pink")} initial={{ width: 0 }}
                         animate={{ width: `${probability}%` }} transition={{ delay: index * 0.05 + 0.3, duration: 0.5 }} />
                     </div>
                   )}

@@ -1,24 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Megaphone, MessageSquare } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useAdminFeedbackStore } from '@/stores/adminFeedbackStore';
 import { cn } from '@/lib/utils';
 
 export function AdminNav() {
   const pathname = usePathname();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const unreadCount = useAdminFeedbackStore((s) => s.unreadCount);
+  const setUnreadCount = useAdminFeedbackStore((s) => s.setUnreadCount);
   const supabase = createClient();
 
+  // 초기 마운트 시 DB에서 unread count 조회
   useEffect(() => {
     supabase
       .from('feedbacks')
       .select('*', { count: 'exact', head: true })
       .eq('is_read', false)
       .then(({ count }: { count: number | null }) => setUnreadCount(count ?? 0));
-  }, [supabase]);
+  }, [supabase, setUnreadCount]);
 
   const tabs = [
     {
@@ -37,7 +40,8 @@ export function AdminNav() {
   ];
 
   return (
-    <nav className="flex gap-1 px-6 py-2 bg-bg-card/50 border-b-3 border-gum-black">
+    <aside className="w-56 shrink-0 bg-bg-card border-r border-border py-4 px-3 flex flex-col gap-1">
+      <p className="px-3 mb-2 text-xs font-semibold text-text-muted uppercase tracking-wider">메뉴</p>
       {tabs.map((tab) => {
         const Icon = tab.icon;
         return (
@@ -45,22 +49,22 @@ export function AdminNav() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all border-2',
+              'flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium transition-all rounded-lg',
               tab.isActive
-                ? 'bg-gum-pink text-white border-gum-black shadow-brutal-sm'
-                : 'text-text-secondary border-transparent hover:text-gum-black hover:bg-bg-subtle',
+                ? 'bg-gum-pink text-white'
+                : 'text-text-secondary hover:text-gum-black hover:bg-bg-subtle',
             )}
           >
-            <Icon className="w-4 h-4" />
-            {tab.label}
+            <Icon className="w-4 h-4 shrink-0" />
+            <span className="flex-1">{tab.label}</span>
             {tab.badge != null && tab.badge > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-bold text-white bg-gum-coral border-2 border-gum-black rounded-full">
+              <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-bold text-white bg-gum-coral rounded-full">
                 {tab.badge > 99 ? '99+' : tab.badge}
               </span>
             )}
           </Link>
         );
       })}
-    </nav>
+    </aside>
   );
 }

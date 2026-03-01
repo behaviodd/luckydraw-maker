@@ -10,6 +10,8 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { useIsAdmin } from '@/contexts/AdminContext';
+import { cn } from '@/lib/utils';
 import type { AnnouncementWithReadStatus } from '@/types';
 
 interface AnnouncementDetailProps {
@@ -21,18 +23,24 @@ interface AnnouncementDetailProps {
   inline?: boolean;
 }
 
-function AnnouncementContent({ announcement, onClose, showClose }: {
+function AnnouncementContent({ announcement, onClose, showClose, isAdmin }: {
   announcement: AnnouncementWithReadStatus;
   onClose: () => void;
   showClose: boolean;
+  isAdmin: boolean;
 }) {
   return (
     <div className="flex flex-col max-h-[80vh]">
-      {/* Accent bar */}
-      <div className={`h-2 shrink-0 accent-bar ${announcement.isPinned ? 'bg-gum-yellow' : 'bg-gum-blue'}`} />
+      {/* Accent bar — 사용자 페이지에서만 표시 */}
+      {!isAdmin && (
+        <div className={`h-2 shrink-0 accent-bar ${announcement.isPinned ? 'bg-gum-yellow' : 'bg-gum-blue'}`} />
+      )}
 
-      {/* Header — 고정 */}
-      <div className="shrink-0 px-6 pt-6 pb-4 border-b-2 border-gum-black/10">
+      {/* Header */}
+      <div className={cn(
+        'shrink-0 px-6 pt-6 pb-4',
+        isAdmin ? 'border-b border-border' : 'border-b-2 border-gum-black/10',
+      )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 mb-2">
             {announcement.isPinned && (
@@ -47,30 +55,52 @@ function AnnouncementContent({ announcement, onClose, showClose }: {
             </Button>
           )}
         </div>
-        <h3 className="font-display text-2xl text-gum-black mb-1">
+        <h3 className={cn(
+          'text-2xl mb-1',
+          isAdmin ? 'font-bold text-text-primary' : 'font-display text-gum-black',
+        )}>
           {announcement.title}
         </h3>
-        <p className="text-xs text-text-muted font-mono">
+        <p className="text-xs text-text-muted">
           {format(new Date(announcement.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })}
         </p>
       </div>
 
       {/* 스크롤 영역 */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="prose prose-sm max-w-none font-body
-          prose-headings:font-display prose-headings:text-gum-black
-          prose-h1:text-xl prose-h2:text-lg prose-h3:text-base
-          prose-p:text-text-primary prose-p:leading-relaxed
-          prose-a:text-gum-pink prose-a:underline prose-a:font-bold
-          prose-strong:text-gum-black
-          prose-code:bg-bg-subtle prose-code:px-1.5 prose-code:py-0.5 prose-code:border prose-code:border-gum-black/10 prose-code:font-mono prose-code:text-sm prose-code:before:content-none prose-code:after:content-none
-          prose-blockquote:border-l-4 prose-blockquote:border-gum-pink prose-blockquote:pl-4 prose-blockquote:text-text-secondary prose-blockquote:not-italic
-          prose-ul:list-disc prose-ul:pl-5
-          prose-ol:list-decimal prose-ol:pl-5
-          prose-li:text-text-primary prose-li:mb-1
-          prose-hr:border-gum-black/20
-          prose-img:border-3 prose-img:border-gum-black prose-img:shadow-brutal-sm
-        ">
+        <div className={cn(
+          'prose prose-sm max-w-none',
+          isAdmin
+            ? [
+                'prose-headings:font-semibold prose-headings:text-text-primary',
+                'prose-h1:text-xl prose-h2:text-lg prose-h3:text-base',
+                'prose-p:text-text-primary prose-p:leading-relaxed',
+                'prose-a:text-gum-pink prose-a:underline prose-a:font-medium',
+                'prose-strong:text-text-primary',
+                'prose-code:bg-bg-subtle prose-code:px-1.5 prose-code:py-0.5 prose-code:border prose-code:border-border prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none',
+                'prose-blockquote:border-l-4 prose-blockquote:border-gum-pink prose-blockquote:pl-4 prose-blockquote:text-text-secondary prose-blockquote:not-italic',
+                'prose-ul:list-disc prose-ul:pl-5',
+                'prose-ol:list-decimal prose-ol:pl-5',
+                'prose-li:text-text-primary prose-li:mb-1',
+                'prose-hr:border-border',
+                'prose-img:rounded-lg prose-img:border prose-img:border-border',
+              ].join(' ')
+            : [
+                'font-body',
+                'prose-headings:font-display prose-headings:text-gum-black',
+                'prose-h1:text-xl prose-h2:text-lg prose-h3:text-base',
+                'prose-p:text-text-primary prose-p:leading-relaxed',
+                'prose-a:text-gum-pink prose-a:underline prose-a:font-bold',
+                'prose-strong:text-gum-black',
+                'prose-code:bg-bg-subtle prose-code:px-1.5 prose-code:py-0.5 prose-code:border prose-code:border-gum-black/10 prose-code:font-mono prose-code:text-sm prose-code:before:content-none prose-code:after:content-none',
+                'prose-blockquote:border-l-4 prose-blockquote:border-gum-pink prose-blockquote:pl-4 prose-blockquote:text-text-secondary prose-blockquote:not-italic',
+                'prose-ul:list-disc prose-ul:pl-5',
+                'prose-ol:list-decimal prose-ol:pl-5',
+                'prose-li:text-text-primary prose-li:mb-1',
+                'prose-hr:border-gum-black/20',
+                'prose-img:border-3 prose-img:border-gum-black prose-img:shadow-brutal-sm',
+              ].join(' '),
+        )}>
           <Markdown>{announcement.content}</Markdown>
         </div>
       </div>
@@ -79,6 +109,8 @@ function AnnouncementContent({ announcement, onClose, showClose }: {
 }
 
 export function AnnouncementDetail({ announcement, open, onClose, markAsRead, inline }: AnnouncementDetailProps) {
+  const isAdmin = useIsAdmin();
+
   // 모달 마운트 시 읽음 처리
   useEffect(() => {
     if (open && !announcement.isRead) {
@@ -89,8 +121,11 @@ export function AnnouncementDetail({ announcement, open, onClose, markAsRead, in
   // 인라인 모드: 모달 없이 내용만 렌더링 (미리보기용)
   if (inline) {
     return (
-      <div className="brutal-card p-0 overflow-hidden">
-        <AnnouncementContent announcement={announcement} onClose={onClose} showClose={false} />
+      <div className={cn(
+        'p-0 overflow-hidden',
+        isAdmin ? 'rounded-2xl border border-border bg-bg-card' : 'brutal-card',
+      )}>
+        <AnnouncementContent announcement={announcement} onClose={onClose} showClose={false} isAdmin={isAdmin} />
       </div>
     );
   }
@@ -108,7 +143,7 @@ export function AnnouncementDetail({ announcement, open, onClose, markAsRead, in
               exit={{ opacity: 0, scale: 0.9 }}
             >
               <GlassCard className="w-full p-0 overflow-hidden max-h-[80vh]">
-                <AnnouncementContent announcement={announcement} onClose={onClose} showClose={true} />
+                <AnnouncementContent announcement={announcement} onClose={onClose} showClose={true} isAdmin={isAdmin} />
               </GlassCard>
             </motion.div>
           </AnimatePresence>
