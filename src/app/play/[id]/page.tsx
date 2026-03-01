@@ -1,33 +1,30 @@
-'use client';
+import { createServerClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import PlayClient from './PlayClient';
 
-import { use, useCallback } from 'react';
-import { useLuckyDraw } from '@/hooks/useLuckyDraws';
-import { DrawScreen } from '@/components/domain/DrawScreen';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+export default async function PlayPage({ params }: { params: Promise<{ id: string }> }) {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/');
 
-export default function PlayPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const { draw, setDraw, loading } = useLuckyDraw(id);
+  const { id } = await params;
 
-  const handleItemDecremented = useCallback((itemId: string, newRemaining: number) => {
-    setDraw((prev) => {
-      if (!prev?.items) return prev;
-      return {
-        ...prev,
-        items: prev.items.map((item) =>
-          item.id === itemId ? { ...item, remaining: newRemaining } : item
-        ),
-      };
-    });
-  }, [setDraw]);
+  // 최소 필드만 조회 — userId, items, probability_mode 등 미포함
+  const { data: draw } = await supabase
+    .from('lucky_draws')
+    .select('id, name, draw_button_label')
+    .eq('id', id)
+    .single();
 
-  if (loading || !draw) {
-    return (
-      <div className="min-h-screen flex items-center justify-center relative z-10">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
+  if (!draw) redirect('/');
 
-  return <DrawScreen draw={draw} onItemDecremented={handleItemDecremented} />;
+  return (
+    <PlayClient
+      drawData={{
+        id: draw.id,
+        name: draw.name,
+        drawButtonLabel: draw.draw_button_label,
+      }}
+    />
+  );
 }

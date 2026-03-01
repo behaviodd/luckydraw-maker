@@ -52,13 +52,13 @@ CREATE POLICY "items_owner" ON draw_items
     )
   );
 
--- lucky_draws: 누구나 읽기 (play 경로용)
-CREATE POLICY "draws_public_read" ON lucky_draws
-  FOR SELECT USING (true);
+-- lucky_draws: 인증된 사용자만 읽기 (play 경로용, anon 차단)
+CREATE POLICY "draws_authenticated_read" ON lucky_draws
+  FOR SELECT TO authenticated USING (true);
 
--- draw_items: 누구나 읽기 (play 경로용)
-CREATE POLICY "items_public_read" ON draw_items
-  FOR SELECT USING (true);
+-- draw_items: 인증된 사용자만 읽기 (play 경로용, anon 차단)
+CREATE POLICY "items_authenticated_read" ON draw_items
+  FOR SELECT TO authenticated USING (true);
 
 -- remaining 컬럼: 남은 수량 추적
 ALTER TABLE draw_items ADD COLUMN remaining INTEGER;
@@ -66,11 +66,16 @@ UPDATE draw_items SET remaining = quantity WHERE remaining IS NULL;
 ALTER TABLE draw_items ALTER COLUMN remaining SET NOT NULL;
 ALTER TABLE draw_items ADD CONSTRAINT draw_items_remaining_non_negative CHECK (remaining >= 0);
 
--- 아이템 수량 차감 RPC (SECURITY DEFINER로 RLS 우회)
+-- 아이템 수량 차감 RPC (SECURITY DEFINER + 인증 필수)
 CREATE OR REPLACE FUNCTION decrement_item_quantity(p_item_id UUID)
 RETURNS JSON LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE v_row draw_items%ROWTYPE;
 BEGIN
+  -- 인증 검증: 비인증 사용자 차단
+  IF auth.uid() IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'unauthorized');
+  END IF;
+
   UPDATE draw_items SET remaining = remaining - 1
   WHERE id = p_item_id AND remaining > 0
   RETURNING * INTO v_row;
@@ -80,9 +85,39 @@ BEGIN
   RETURN json_build_object('success', true, 'remaining', v_row.remaining);
 END; $$;
 
+-- ═══════════════════════════════════════════
 -- Storage: 아이템 이미지
--- Supabase 대시보드에서 'draw-images' 버킷 생성 (public)
--- 정책: 인증된 사용자만 업로드, 누구나 읽기
+-- ═══════════════════════════════════════════
+-- 사전 조건: Supabase 대시보드 → Storage → New bucket
+--   이름: "draw-images", Public 체크 후 생성
+
+-- 업로드: 인증된 사용자, 본인 폴더({userId}/)에만
+CREATE POLICY "images_upload_own" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'draw-images'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- 수정: 본인 파일만 덮어쓰기 가능
+CREATE POLICY "images_update_own" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (
+    bucket_id = 'draw-images'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- 삭제: 본인 파일만 삭제 가능
+CREATE POLICY "images_delete_own" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'draw-images'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- 읽기: 공개 버킷이므로 누구나 읽기 가능 (드로우/플레이에서 이미지 표시용)
+CREATE POLICY "images_public_read" ON storage.objects
+  FOR SELECT USING (bucket_id = 'draw-images');
 
 -- ═══════════════════════════════════════════
 -- 관리자 권한
@@ -144,3 +179,35 @@ CREATE OR REPLACE FUNCTION is_admin()
 RETURNS BOOLEAN AS $$
   SELECT EXISTS (SELECT 1 FROM admins WHERE user_id = auth.uid());
 $$ LANGUAGE sql SECURITY DEFINER;
+
+-- ═══════════════════════════════════════════
+-- 피드백
+-- ═══════════════════════════════════════════
+CREATE TABLE feedbacks (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  sender_email TEXT NOT NULL,
+  subject      TEXT NOT NULL,
+  message      TEXT NOT NULL,
+  category     TEXT NOT NULL CHECK (category IN ('bug', 'feature', 'general', 'other')),
+  is_read      BOOLEAN NOT NULL DEFAULT false,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE feedbacks ENABLE ROW LEVEL SECURITY;
+
+-- 인증된 사용자는 자신의 피드백만 삽입 가능
+CREATE POLICY "feedbacks_insert_own" ON feedbacks
+  FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+-- 관리자는 모든 피드백 조회 가능
+CREATE POLICY "feedbacks_admin_read" ON feedbacks
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM admins WHERE user_id = auth.uid()));
+
+-- 관리자는 피드백 읽음 상태 업데이트 가능
+CREATE POLICY "feedbacks_admin_update" ON feedbacks
+  FOR UPDATE TO authenticated
+  USING (EXISTS (SELECT 1 FROM admins WHERE user_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM admins WHERE user_id = auth.uid()));

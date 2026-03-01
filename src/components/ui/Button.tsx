@@ -3,6 +3,7 @@
 import { motion, type HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { forwardRef } from 'react';
+import { useThemeStore } from '@/stores/themeStore';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'draw';
 
@@ -36,24 +37,70 @@ const variantStyles: Record<ButtonVariant, string> = {
     'min-w-[280px] h-[80px] text-xl font-display',
     'bg-gum-pink text-white',
     'border-4 border-gum-black shadow-brutal-lg',
-    'hover:bg-gum-yellow hover:text-gum-black hover:shadow-[8px_8px_0px_#1C1C1C] hover:translate-x-[-3px] hover:translate-y-[-3px]',
+    'hover:bg-gum-yellow hover:text-gum-black hover:shadow-[8px_8px_0px_var(--color-gum-black)] hover:translate-x-[-3px] hover:translate-y-[-3px]',
     'active:shadow-brutal-sm active:translate-x-[2px] active:translate-y-[2px]',
     'animate-wiggle',
   ].join(' '),
 };
 
+const candyVariantStyles: Partial<Record<ButtonVariant, string>> = {
+  draw: [
+    'min-w-[280px] h-[80px] text-xl font-display italic',
+    'text-white border-2 border-white/60',
+    'btn-draw',
+  ].join(' '),
+  primary: [
+    'text-white px-6 py-3',
+    'border-2 border-white/60',
+    'hover:brightness-110',
+  ].join(' '),
+  secondary: [
+    'bg-accent-secondary text-white px-6 py-3',
+    'border-2 border-white/60',
+    'hover:bg-accent-primary',
+    'transition-colors duration-300',
+  ].join(' '),
+  danger: [
+    'bg-error text-white px-6 py-3',
+    'border-2 border-white/60',
+  ].join(' '),
+};
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', isLoading, className, children, disabled, ...props }, ref) => {
+  ({ variant = 'primary', isLoading, className, children, disabled, style, ...props }, ref) => {
+    const currentTheme = useThemeStore((s) => s.currentTheme);
+    const isRetro = currentTheme === 'retro-pc';
+    const isCottonCandy = currentTheme === 'cotton-candy';
+
+    const baseClasses = 'inline-flex items-center justify-center gap-2 font-display text-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+
+    let variantClasses: string;
+    let extraStyle = style;
+
+    if (isRetro && variant !== 'ghost') {
+      variantClasses = cn('retro-button px-6 py-3 font-display text-lg', variant === 'draw' && 'btn-draw min-w-[280px] h-[80px] text-xl');
+    } else if (isCottonCandy && variant !== 'ghost') {
+      variantClasses = cn(
+        candyVariantStyles[variant] ?? variantStyles[variant],
+        'rounded-[var(--radius-button,50px)]',
+      );
+      if (variant === 'draw' || variant === 'primary') {
+        extraStyle = {
+          ...style,
+          background: 'linear-gradient(135deg, #FF6FA8, #C9A8E2)',
+        };
+      }
+    } else {
+      variantClasses = variantStyles[variant];
+    }
+
     return (
       <motion.button
         ref={ref}
-        whileHover={disabled ? {} : { scale: 1.02 }}
-        whileTap={disabled ? {} : { scale: 0.98 }}
-        className={cn(
-          'inline-flex items-center justify-center gap-2 font-display text-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
-          variantStyles[variant],
-          className
-        )}
+        whileHover={disabled || isRetro ? {} : { scale: 1.02 }}
+        whileTap={disabled || isRetro ? {} : { scale: 0.98 }}
+        className={cn(baseClasses, variantClasses, className)}
+        style={extraStyle}
         disabled={disabled || isLoading}
         {...props}
       >

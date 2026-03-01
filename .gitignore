@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# font source
+DungGeunMo WebFont/
+
+# supabase temp
+supabase/.temp/

@@ -38,7 +38,7 @@ export function AnnouncementPanel({ open, onClose, announcements, markAsRead }: 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-gum-black/40 z-50"
+              className="fixed inset-0 bg-gum-black/40 z-50 modal-overlay"
               onClick={onClose}
             />
 
@@ -48,10 +48,10 @@ export function AnnouncementPanel({ open, onClose, announcements, markAsRead }: 
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col bg-bg-warm border-l-3 border-gum-black"
+              className="fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col bg-bg-warm border-l-3 border-gum-black slide-panel"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b-3 border-gum-black bg-bg-card">
+              <div className="flex items-center justify-between px-6 py-4 border-b-3 border-gum-black bg-bg-card panel-header">
                 <h2 className="font-display text-xl text-gum-black">공지사항</h2>
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" onClick={() => setFeedbackOpen(true)} className="text-text-secondary">
@@ -76,7 +76,7 @@ export function AnnouncementPanel({ open, onClose, announcements, markAsRead }: 
                       transition={{ duration: 3, repeat: Infinity }}
                       className="mb-6"
                     >
-                      <div className="w-20 h-20 border-3 border-gum-black bg-gum-blue/20 shadow-brutal flex items-center justify-center">
+                      <div className="w-20 h-20 border-3 border-gum-black bg-gum-blue/20 shadow-brutal flex items-center justify-center empty-icon">
                         <Bell className="w-10 h-10 text-gum-blue" />
                       </div>
                     </motion.div>
@@ -97,7 +97,7 @@ export function AnnouncementPanel({ open, onClose, announcements, markAsRead }: 
                           onClick={() => handleCardClick(announcement.id)}
                         >
                           {/* Accent bar */}
-                          <div className="overflow-hidden -mx-6 -mt-6 mb-4">
+                          <div className="overflow-hidden -mx-6 -mt-6 mb-4 accent-bar">
                             <div className={`h-2 ${announcement.isPinned ? 'bg-gum-yellow' : 'bg-gum-blue'}`} />
                           </div>
 

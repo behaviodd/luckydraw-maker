@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { LogOut, Bell } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { Button } from '@/components/ui/Button';
 import { AnnouncementPanel } from '@/components/domain/AnnouncementPanel';
+import { HamburgerMenu } from '@/components/layout/HamburgerMenu';
 
 export function Header() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { announcements, unreadCount, markAsRead } = useAnnouncements();
   const [panelOpen, setPanelOpen] = useState(false);
 
@@ -17,12 +18,12 @@ export function Header() {
     <>
       <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b-3 border-gum-black bg-bg-card">
         <Link href="/vault" className="flex items-center gap-1">
-          <span className="font-display text-gum-pink text-xl">럭드</span>
+          <span className="font-display text-gum-pink text-xl">럭키드로우</span>
           <span className="font-display text-gum-black text-xl">메이커</span>
         </Link>
 
         {user && (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <Button variant="ghost" onClick={() => setPanelOpen(true)} className="relative text-text-secondary">
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
@@ -31,21 +32,7 @@ export function Header() {
                 </span>
               )}
             </Button>
-            <div className="flex items-center gap-3">
-              {user.user_metadata?.avatar_url && (
-                <img
-                  src={user.user_metadata.avatar_url}
-                  alt="Avatar"
-                  className="w-8 h-8 rounded-full border-2 border-gum-black shadow-brutal-sm"
-                />
-              )}
-              <span className="text-sm text-text-secondary font-medium hidden sm:inline">
-                {user.user_metadata?.full_name ?? user.email}
-              </span>
-            </div>
-            <Button variant="ghost" onClick={signOut} className="text-text-secondary">
-              <LogOut className="w-4 h-4" />
-            </Button>
+            <HamburgerMenu />
           </div>
         )}
       </header>

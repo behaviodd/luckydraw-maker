@@ -1,16 +1,14 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import AnnouncementEditorClient from './AnnouncementEditorClient';
+import FeedbacksClient from './FeedbacksClient';
 
-export default async function AnnouncementEditorPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function FeedbacksPage() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/');
 
-  // 관리자 권한 2차 검증
   const { data: isAdmin } = await supabase.rpc('is_admin');
   if (!isAdmin) redirect('/vault?error=unauthorized');
 
-  const { id } = await params;
-  return <AnnouncementEditorClient id={id} />;
+  return <FeedbacksClient />;
 }

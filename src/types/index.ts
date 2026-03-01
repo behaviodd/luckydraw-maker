@@ -69,3 +69,16 @@ export interface Announcement {
 export interface AnnouncementWithReadStatus extends Announcement {
   isRead: boolean;
 }
+
+export type FeedbackCategory = 'bug' | 'feature' | 'general' | 'other';
+
+export interface Feedback {
+  id: string;
+  userId: string | null;
+  senderEmail: string;
+  subject: string;
+  message: string;
+  category: FeedbackCategory;
+  isRead: boolean;
+  createdAt: string;
+}

@@ -29,7 +29,7 @@ function AnnouncementContent({ announcement, onClose, showClose }: {
   return (
     <div className="flex flex-col max-h-[80vh]">
       {/* Accent bar */}
-      <div className={`h-2 shrink-0 ${announcement.isPinned ? 'bg-gum-yellow' : 'bg-gum-blue'}`} />
+      <div className={`h-2 shrink-0 accent-bar ${announcement.isPinned ? 'bg-gum-yellow' : 'bg-gum-blue'}`} />
 
       {/* Header — 고정 */}
       <div className="shrink-0 px-6 pt-6 pb-4 border-b-2 border-gum-black/10">

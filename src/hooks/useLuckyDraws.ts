@@ -44,7 +44,7 @@ export function useLuckyDraws(userId?: string) {
     setLoading(true);
     const { data, error } = await supabase
       .from('lucky_draws')
-      .select('*, draw_items(*)')
+      .select('id, name, draw_button_label, probability_mode, is_active, created_at, updated_at, draw_items(id, draw_id, name, quantity, remaining, image_url, sort_order)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -74,7 +74,10 @@ export function useLuckyDraws(userId?: string) {
   return { draws, loading, fetchDraws, deleteDraw };
 }
 
-export function useLuckyDraw(id: string) {
+/**
+ * @param requireOwnership true이면 draw.userId !== 현재 유저 시 null 반환 (소유권 이중 검증)
+ */
+export function useLuckyDraw(id: string, requireOwnership = false) {
   const [draw, setDraw] = useState<LuckyDraw | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -84,17 +87,29 @@ export function useLuckyDraw(id: string) {
       setLoading(true);
       const { data } = await supabase
         .from('lucky_draws')
-        .select('*, draw_items(*)')
+        .select('id, user_id, name, draw_button_label, probability_mode, is_active, created_at, updated_at, draw_items(id, draw_id, name, quantity, remaining, image_url, sort_order)')
         .eq('id', id)
         .single();
 
       if (data) {
-        setDraw(mapDraw(data));
+        const mapped = mapDraw(data);
+
+        // 원칙 3: 소유권 이중 검증 — RLS + 클라이언트 검증
+        if (requireOwnership) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user || mapped.userId !== user.id) {
+            setDraw(null);
+            setLoading(false);
+            return;
+          }
+        }
+
+        setDraw(mapped);
       }
       setLoading(false);
     };
     fetch();
-  }, [id, supabase]);
+  }, [id, supabase, requireOwnership]);
 
   return { draw, setDraw, loading };
 }

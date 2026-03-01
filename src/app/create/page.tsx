@@ -1,7 +1,11 @@
-'use client';
+import { createServerClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import CreateClient from './CreateClient';
 
-import { LuckyDrawEditor } from '@/components/domain/LuckyDrawEditor';
+export default async function CreatePage() {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/');
 
-export default function CreatePage() {
-  return <LuckyDrawEditor />;
+  return <CreateClient />;
 }

@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const protectedPaths = ['/vault', '/draw', '/create', '/edit', '/admin'];
+const protectedPaths = ['/vault', '/draw', '/create', '/edit', '/admin', '/play', '/api/draw'];
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({
@@ -32,18 +32,19 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
+  // getUser()는 Supabase 서버에서 JWT 서명을 검증한다 (getSession은 로컬 디코딩만)
+  const { data: { user } } = await supabase.auth.getUser();
 
   const isProtected = protectedPaths.some((path) =>
     req.nextUrl.pathname.startsWith(path)
   );
 
-  if (isProtected && !session) {
+  if (isProtected && !user) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
   // /admin 경로: 관리자 권한 확인
-  if (req.nextUrl.pathname.startsWith('/admin') && session) {
+  if (req.nextUrl.pathname.startsWith('/admin') && user) {
     const { data: isAdmin } = await supabase.rpc('is_admin');
     if (!isAdmin) {
       return NextResponse.redirect(new URL('/vault?error=unauthorized', req.url));
@@ -54,5 +55,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/vault/:path*', '/draw/:path*', '/create/:path*', '/edit/:path*', '/admin/:path*'],
+  matcher: ['/vault/:path*', '/draw/:path*', '/create/:path*', '/edit/:path*', '/admin/:path*', '/play/:path*', '/api/draw/:path*'],
 };

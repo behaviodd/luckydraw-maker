@@ -13,7 +13,11 @@ interface FloatingShape {
   duration: number;
 }
 
-const COLORS = ['#FF90E8', '#FFC900', '#23D18C', '#90B8F8', '#C9B1FF', '#FFAB76', '#FF6B6B'];
+const COLORS = [
+  'var(--color-gum-pink)', 'var(--color-gum-yellow)', 'var(--color-gum-green)',
+  'var(--color-gum-blue)', 'var(--color-gum-purple)', 'var(--color-gum-orange)',
+  'var(--color-gum-coral)',
+];
 const SHAPES: FloatingShape['shape'][] = ['circle', 'star', 'diamond', 'heart'];
 
 function ShapeElement({ shape, color, size }: { shape: string; color: string; size: number }) {
@@ -62,7 +66,7 @@ export function StarField() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+    <div className="star-field fixed inset-0 z-0 pointer-events-none overflow-hidden">
       {shapes.map((s, i) => (
         <motion.div
           key={i}

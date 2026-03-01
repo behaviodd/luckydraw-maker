@@ -14,11 +14,16 @@ DO $$ BEGIN
   END IF;
 END $$;
 
--- 3. 아이템 수량 차감 RPC (SECURITY DEFINER로 RLS 우회, 원자적 차감)
+-- 3. 아이템 수량 차감 RPC (SECURITY DEFINER + 인증 필수, 원자적 차감)
 CREATE OR REPLACE FUNCTION decrement_item_quantity(p_item_id UUID)
 RETURNS JSON LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE v_row draw_items%ROWTYPE;
 BEGIN
+  -- 인증 검증: 비인증 사용자 차단
+  IF auth.uid() IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'unauthorized');
+  END IF;
+
   UPDATE draw_items SET remaining = remaining - 1
   WHERE id = p_item_id AND remaining > 0
   RETURNING * INTO v_row;

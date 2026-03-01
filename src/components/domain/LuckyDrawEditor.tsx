@@ -26,10 +26,10 @@ const drawItemSchema = z.object({
 });
 
 const luckyDrawSchema = z.object({
-  name: z.string().min(1, '럭드 이름을 입력해주세요').max(30),
+  name: z.string().min(1, '럭키드로우 이름을 입력해주세요').max(30),
   drawButtonLabel: z.string().min(1).max(15).default('두근두근 뽑기!'),
   probabilityMode: z.enum(['equal', 'weighted']),
-  items: z.array(drawItemSchema).min(2, '아이템을 2개 이상 추가해주세요'),
+  items: z.array(drawItemSchema).min(2, '아이템을 2개 이상 추가해주세요').max(100, '아이템은 최대 100개까지 추가할 수 있습니다'),
 });
 
 interface LuckyDrawEditorProps {
@@ -122,7 +122,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
         const { error: drawError } = await supabase.from('lucky_draws').update({
           name: data.name, draw_button_label: data.drawButtonLabel,
           probability_mode: data.probabilityMode, updated_at: new Date().toISOString(),
-        }).eq('id', existingDraw.id);
+        }).eq('id', existingDraw.id).eq('user_id', user.id);
         if (drawError) throw drawError;
         await supabase.from('draw_items').delete().eq('draw_id', existingDraw.id);
         const { error: itemsError } = await supabase.from('draw_items').insert(
@@ -170,7 +170,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="font-display text-2xl text-gum-black">
-          {existingDraw ? '럭드 수정' : '새 럭드 만들기'}
+          {existingDraw ? '럭키드로우 수정' : '새 럭키드로우 만들기'}
         </h1>
       </div>
 
@@ -179,8 +179,8 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
           <h2 className="font-display text-lg text-gum-pink mb-4">기본 설정</h2>
           <div className="flex flex-col gap-4">
             <div>
-              <label className="text-sm text-text-secondary mb-1 block font-bold">럭드 이름</label>
-              <input {...register('name')} placeholder="예: 겨울 럭드 이벤트" maxLength={30} className="w-full" />
+              <label className="text-sm text-text-secondary mb-1 block font-bold">럭키드로우 이름</label>
+              <input {...register('name')} placeholder="예: 겨울 럭키드로우 이벤트" maxLength={30} className="w-full" />
               {errors.name && <p className="text-xs text-gum-coral mt-1">{errors.name.message}</p>}
             </div>
             <div>

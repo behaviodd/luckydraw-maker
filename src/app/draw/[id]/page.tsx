@@ -1,33 +1,23 @@
-'use client';
+import { createServerClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import DrawClient from './DrawClient';
 
-import { use, useCallback } from 'react';
-import { useLuckyDraw } from '@/hooks/useLuckyDraws';
-import { DrawScreen } from '@/components/domain/DrawScreen';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+export default async function DrawPage({ params }: { params: Promise<{ id: string }> }) {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/');
 
-export default function DrawPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const { draw, setDraw, loading } = useLuckyDraw(id);
+  const { id } = await params;
 
-  const handleItemDecremented = useCallback((itemId: string, newRemaining: number) => {
-    setDraw((prev) => {
-      if (!prev?.items) return prev;
-      return {
-        ...prev,
-        items: prev.items.map((item) =>
-          item.id === itemId ? { ...item, remaining: newRemaining } : item
-        ),
-      };
-    });
-  }, [setDraw]);
+  // 서버 소유권 검증: 드로우 운영은 소유자만
+  const { data: draw } = await supabase
+    .from('lucky_draws')
+    .select('id')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single();
 
-  if (loading || !draw) {
-    return (
-      <div className="min-h-screen flex items-center justify-center relative z-10">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
+  if (!draw) redirect('/vault');
 
-  return <DrawScreen draw={draw} onItemDecremented={handleItemDecremented} />;
+  return <DrawClient id={id} />;
 }

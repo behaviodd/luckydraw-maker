@@ -94,7 +94,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   return (
     <Dialog.Root open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-gum-black/40 z-50" />
+        <Dialog.Overlay className="fixed inset-0 bg-gum-black/40 z-50 modal-overlay" />
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100vw-3rem)] max-w-lg max-h-[80vh] overflow-hidden">
           <AnimatePresence mode="wait">
             {sent ? (
@@ -105,14 +105,14 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
                 exit={{ opacity: 0, scale: 0.9 }}
               >
                 <GlassCard className="w-full p-0 overflow-hidden">
-                  <div className="h-2 bg-gum-green" />
+                  <div className="h-2 accent-bar bg-gum-green" />
                   <div className="flex flex-col items-center gap-4 p-8">
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 200, damping: 12 }}
                     >
-                      <div className="w-20 h-20 border-3 border-gum-black bg-gum-green/20 shadow-brutal flex items-center justify-center">
+                      <div className="w-20 h-20 border-3 border-gum-black bg-gum-green/20 shadow-brutal flex items-center justify-center empty-icon">
                         <CheckCircle className="w-10 h-10 text-gum-green" />
                       </div>
                     </motion.div>
@@ -130,7 +130,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
                 exit={{ opacity: 0, scale: 0.9 }}
               >
                 <GlassCard className="w-full p-0 overflow-hidden">
-                  <div className="h-2 bg-gum-pink" />
+                  <div className="h-2 accent-bar bg-gum-pink" />
                   <form onSubmit={handleSubmit(onSubmit)} className="p-6 overflow-y-auto max-h-[calc(80vh-4rem)]">
                     <Dialog.Title className="font-display text-2xl text-gum-black mb-1">피드백 보내기</Dialog.Title>
                     <Dialog.Description className="text-sm text-text-secondary mb-6">

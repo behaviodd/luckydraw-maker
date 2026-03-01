@@ -62,7 +62,7 @@ export function LuckyDrawCard({ draw, index, onDelete, onDuplicate }: LuckyDrawC
       transition={{ delay: index * 0.08, duration: 0.4 }}
     >
       <GlassCard className="group hover:shadow-brutal-lg hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all duration-200">
-        <div className="overflow-hidden -mx-6 -mt-6 mb-4">
+        <div className="overflow-hidden -mx-6 -mt-6 mb-4 accent-bar">
           <div className={`h-2 ${accentColor}`} />
         </div>
         <div className="flex flex-col gap-4">
@@ -74,7 +74,7 @@ export function LuckyDrawCard({ draw, index, onDelete, onDuplicate }: LuckyDrawC
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Badge className="bg-[#176935]/15 text-[#176935] border-[#176935]">
+              <Badge className="bg-gum-green/15 text-gum-green border-gum-green">
                 <Sparkles className="w-3 h-3 mr-1" />{itemCount}개 아이템
               </Badge>
               <Badge variant={draw.probabilityMode === 'equal' ? 'sky' : 'rose'}>
@@ -101,7 +101,7 @@ export function LuckyDrawCard({ draw, index, onDelete, onDuplicate }: LuckyDrawC
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: -4 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 bottom-full mb-2 w-40 bg-white border-3 border-gum-black shadow-brutal-sm z-50"
+                    className="absolute right-0 bottom-full mb-2 w-40 bg-bg-card border-3 border-gum-black shadow-brutal-sm z-50 ctx-menu"
                   >
                     {menuItems.map((item) => (
                       <button
@@ -110,7 +110,7 @@ export function LuckyDrawCard({ draw, index, onDelete, onDuplicate }: LuckyDrawC
                         className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors
                           ${item.danger
                             ? 'text-gum-coral hover:bg-gum-coral/10'
-                            : 'text-gum-black hover:bg-gum-lavender/30'
+                            : 'text-gum-black hover:bg-bg-subtle'
                           }`}
                       >
                         <item.icon className="w-3.5 h-3.5" />
