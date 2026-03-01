@@ -4,7 +4,9 @@ import { Resend } from 'resend';
 import { createServerClient } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rateLimit';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 const feedbackSchema = z.object({
   senderEmail: z.string().email(),
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
 
   // Resend로 이메일 전송
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: process.env.FEEDBACK_FROM_EMAIL ?? 'noreply@yourdomain.com',
       to: process.env.FEEDBACK_TO_EMAIL!,
       replyTo: senderEmail,
