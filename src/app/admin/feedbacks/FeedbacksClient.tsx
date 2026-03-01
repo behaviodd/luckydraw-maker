@@ -2,15 +2,14 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Mail, ChevronDown, ChevronUp, Circle, CheckCircle2 } from 'lucide-react';
+import { MessageSquare, Mail, Circle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useAdminFeedbacks } from '@/hooks/useAdminFeedbacks';
 import { Badge } from '@/components/ui/Badge';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { cn } from '@/lib/utils';
-import type { Feedback, FeedbackCategory } from '@/types';
+import type { FeedbackCategory } from '@/types';
 
 const categories: { value: FeedbackCategory | 'all'; label: string }[] = [
   { value: 'all', label: '전체' },
@@ -26,89 +25,6 @@ const categoryBadge: Record<FeedbackCategory, { label: string; className: string
   general: { label: '일반 문의', className: 'bg-gum-blue/15 text-gum-blue border-gum-blue' },
   other: { label: '기타', className: '' },
 };
-
-function FeedbackCard({
-  feedback,
-  expanded,
-  onToggle,
-}: {
-  feedback: Feedback;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  const cat = categoryBadge[feedback.category];
-  const mailtoHref = `mailto:${feedback.senderEmail}?subject=${encodeURIComponent(`Re: ${feedback.subject}`)}`;
-
-  return (
-    <GlassCard
-      className={cn(
-        'transition-all duration-200 cursor-pointer hover:shadow-md',
-        !feedback.isRead && 'ring-1 ring-gum-pink',
-      )}
-      onClick={onToggle}
-    >
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-2 flex-wrap">
-        <Badge className={cat.className}>{cat.label}</Badge>
-        <span className="text-xs text-text-muted ml-auto">
-          {formatDistanceToNow(new Date(feedback.createdAt), { addSuffix: true, locale: ko })}
-        </span>
-        {feedback.isRead ? (
-          <CheckCircle2 className="w-4 h-4 text-text-muted shrink-0" />
-        ) : (
-          <Circle className="w-4 h-4 text-gum-pink fill-gum-pink shrink-0" />
-        )}
-      </div>
-
-      {/* Subject */}
-      <h3 className={cn(
-        'text-lg leading-snug mb-1 truncate',
-        !feedback.isRead ? 'font-semibold text-text-primary' : 'font-medium text-text-secondary',
-      )}>
-        {feedback.subject}
-      </h3>
-
-      {/* Sender */}
-      <div className="flex items-center gap-2 mb-2">
-        <p className="text-xs text-text-muted truncate">{feedback.senderEmail}</p>
-        <a
-          href={mailtoHref}
-          onClick={(e) => e.stopPropagation()}
-          className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-gum-pink hover:text-gum-pink/80 transition-colors"
-        >
-          <Mail className="w-3 h-3" /> 답장
-        </a>
-      </div>
-
-      {/* Message preview or full */}
-      <AnimatePresence initial={false}>
-        {expanded ? (
-          <motion.div
-            key="full"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed border-t border-border pt-3 mt-1">
-              {feedback.message}
-            </p>
-          </motion.div>
-        ) : (
-          <p className="text-sm text-text-secondary line-clamp-2">{feedback.message}</p>
-        )}
-      </AnimatePresence>
-
-      {/* Toggle */}
-      <div className="flex justify-end mt-2">
-        <span className="text-xs text-text-muted flex items-center gap-1">
-          {expanded ? <><ChevronUp className="w-3 h-3" /> 접기</> : <><ChevronDown className="w-3 h-3" /> 상세 보기</>}
-        </span>
-      </div>
-    </GlassCard>
-  );
-}
 
 export default function FeedbacksClient() {
   const { feedbacks, loading, markAsRead } = useAdminFeedbacks();
@@ -169,10 +85,10 @@ export default function FeedbacksClient() {
           />
           읽지 않은 피드백만 보기
         </label>
-        <span className="text-xs text-text-muted font-mono">최신순</span>
+        <span className="text-xs text-text-muted font-mono">{filtered.length}건 · 최신순</span>
       </div>
 
-      {/* List */}
+      {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-20"><LoadingSpinner size="lg" /></div>
       ) : feedbacks.length === 0 ? (
@@ -188,22 +104,93 @@ export default function FeedbacksClient() {
           <p className="text-text-secondary">필터 조건에 맞는 피드백이 없어요.</p>
         </motion.div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {filtered.map((feedback, index) => (
-            <motion.div
-              key={feedback.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04, duration: 0.3 }}
-            >
-              <FeedbackCard
-                feedback={feedback}
-                expanded={expandedId === feedback.id}
-                onToggle={() => handleToggle(feedback.id)}
-              />
-            </motion.div>
-          ))}
-        </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-bg-card rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-bg-subtle">
+              <tr>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-10"></th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider w-24">분류</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">제목</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider w-44">보낸 사람</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-28">시간</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-16"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((f) => {
+                const cat = categoryBadge[f.category];
+                const isExpanded = expandedId === f.id;
+                const mailtoHref = `mailto:${f.senderEmail}?subject=${encodeURIComponent(`Re: ${f.subject}`)}`;
+                return (
+                  <tr key={f.id} className="border-t border-border group">
+                    <td className="px-4 py-3 text-center">
+                      {f.isRead ? (
+                        <CheckCircle2 className="w-4 h-4 text-text-muted inline-block" />
+                      ) : (
+                        <Circle className="w-4 h-4 text-gum-pink fill-gum-pink inline-block" />
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge className={cat.className}>{cat.label}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleToggle(f.id)}
+                        className="text-left w-full cursor-pointer"
+                      >
+                        <span className={cn(
+                          'block truncate max-w-sm',
+                          !f.isRead ? 'font-semibold text-text-primary' : 'font-medium text-text-secondary',
+                        )}>
+                          {f.subject}
+                        </span>
+                        <AnimatePresence initial={false}>
+                          {isExpanded && (
+                            <motion.div
+                              key="msg"
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <p className="text-xs text-text-secondary whitespace-pre-wrap leading-relaxed mt-2 pt-2 border-t border-border">
+                                {f.message}
+                              </p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-text-secondary truncate max-w-[120px]">{f.senderEmail}</span>
+                        <a
+                          href={mailtoHref}
+                          onClick={(e) => e.stopPropagation()}
+                          className="shrink-0 p-1 text-gum-pink hover:text-gum-pink/80 transition-colors"
+                          title="답장"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="text-xs text-text-muted">
+                        {formatDistanceToNow(new Date(f.createdAt), { addSuffix: true, locale: ko })}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button onClick={() => handleToggle(f.id)} className="p-1 text-text-muted hover:text-text-secondary transition-colors cursor-pointer">
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </motion.div>
       )}
     </main>
   );

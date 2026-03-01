@@ -82,3 +82,36 @@ export interface Feedback {
   isRead: boolean;
   createdAt: string;
 }
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  createdAt: string;
+  isAdmin: boolean;
+  drawCount: number;
+}
+
+export interface AdminDraw {
+  id: string;
+  userId: string;
+  name: string;
+  drawButtonLabel: string;
+  probabilityMode: ProbabilityMode;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  ownerDisplayName: string | null;
+  ownerEmail: string;
+  ownerAvatarUrl: string | null;
+  itemCount: number;
+  totalQuantity: number;
+  totalRemaining: number;
+}
+
+export interface AdminDrawDetail {
+  draw: LuckyDraw;
+  items: DrawItem[];
+  owner: { displayName: string | null; avatarUrl: string | null; email: string };
+}

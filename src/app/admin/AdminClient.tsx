@@ -2,14 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Plus, Megaphone, Pin, Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { GlassCard } from '@/components/ui/GlassCard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { createClient } from '@/lib/supabase/client';
 import { deleteAnnouncement, togglePublish } from '@/lib/announcements';
@@ -113,81 +111,88 @@ export default function AdminClient() {
           </button>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {announcements.map((a, index) => (
-            <motion.div
-              key={a.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.06, duration: 0.3 }}
-            >
-              <GlassCard className="transition-all duration-200 hover:shadow-md">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="font-semibold text-base text-text-primary leading-snug truncate">{a.title}</h3>
-                      {a.isPinned && (
-                        <Badge className="bg-gum-yellow/15 text-gum-yellow border-gum-yellow">
-                          <Pin className="w-3 h-3 mr-1" />고정
-                        </Badge>
-                      )}
-                      {a.isPublished ? (
-                        <Badge className="bg-gum-green/15 text-gum-green border-gum-green">발행됨</Badge>
-                      ) : (
-                        <Badge>미발행</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-text-muted font-mono">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-bg-card rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-bg-subtle">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">제목</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-24">상태</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-20">고정</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-36">작성일</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-28">액션</th>
+              </tr>
+            </thead>
+            <tbody>
+              {announcements.map((a) => (
+                <tr key={a.id} className="border-t border-border hover:bg-bg-subtle/50 transition-colors">
+                  <td className="px-4 py-3">
+                    <span className="font-medium text-text-primary truncate block max-w-xs">{a.title}</span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {a.isPublished ? (
+                      <Badge className="bg-gum-green/15 text-gum-green border-gum-green">발행됨</Badge>
+                    ) : (
+                      <Badge>미발행</Badge>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {a.isPinned && (
+                      <Badge className="bg-gum-yellow/15 text-gum-yellow border-gum-yellow">
+                        <Pin className="w-3 h-3 mr-1" />고정
+                      </Badge>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="text-xs text-text-muted font-mono">
                       {format(new Date(a.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      variant="ghost"
-                      className="text-text-secondary !p-2"
-                      onClick={() => router.push(`/admin/announcements/${a.id}`)}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="text-text-secondary !p-2"
-                      onClick={() => handleTogglePublish(a.id, a.isPublished)}
-                    >
-                      {a.isPublished ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="text-text-muted hover:text-gum-coral !p-2"
-                      onClick={() => setDeleteTarget(a.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </GlassCard>
-            </motion.div>
-          ))}
-        </div>
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => router.push(`/admin/announcements/${a.id}`)}
+                        className="p-1.5 text-text-secondary hover:text-gum-pink transition-colors cursor-pointer rounded-lg hover:bg-gum-pink/10"
+                        title="편집"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleTogglePublish(a.id, a.isPublished)}
+                        className="p-1.5 text-text-secondary hover:text-gum-blue transition-colors cursor-pointer rounded-lg hover:bg-gum-blue/10"
+                        title={a.isPublished ? '숨기기' : '발행하기'}
+                      >
+                        {a.isPublished ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                      <button
+                        onClick={() => setDeleteTarget(a.id)}
+                        className="p-1.5 text-text-muted hover:text-gum-coral transition-colors cursor-pointer rounded-lg hover:bg-gum-coral/10"
+                        title="삭제"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </motion.div>
       )}
 
       <Dialog.Root open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/30 z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100vw-3rem)] max-w-sm">
-            <AnimatePresence>
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
-                <div className="w-full p-8 bg-bg-card rounded-2xl shadow-lg border border-border">
-                  <Dialog.Title className="text-lg font-bold text-gum-coral mb-2">공지를 삭제할까요?</Dialog.Title>
-                  <Dialog.Description className="text-sm text-text-secondary mb-6">이 작업은 되돌릴 수 없어요!</Dialog.Description>
-                  <div className="flex gap-3">
-                    <button className="flex-1 px-4 py-2.5 text-sm font-semibold text-text-secondary bg-bg-subtle rounded-lg hover:bg-border transition-colors cursor-pointer" onClick={() => setDeleteTarget(null)}>취소</button>
-                    <button className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-gum-coral rounded-lg hover:opacity-90 transition-opacity cursor-pointer" onClick={handleDeleteConfirm}>삭제하기</button>
-                  </div>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <div className="w-full p-8 bg-bg-card rounded-2xl shadow-lg border border-border">
+                <Dialog.Title className="text-lg font-bold text-gum-coral mb-2">공지를 삭제할까요?</Dialog.Title>
+                <Dialog.Description className="text-sm text-text-secondary mb-6">이 작업은 되돌릴 수 없어요!</Dialog.Description>
+                <div className="flex gap-3">
+                  <button className="flex-1 px-4 py-2.5 text-sm font-semibold text-text-secondary bg-bg-subtle rounded-lg hover:bg-border transition-colors cursor-pointer" onClick={() => setDeleteTarget(null)}>취소</button>
+                  <button className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-gum-coral rounded-lg hover:opacity-90 transition-opacity cursor-pointer" onClick={handleDeleteConfirm}>삭제하기</button>
                 </div>
-              </motion.div>
-            </AnimatePresence>
+              </div>
+            </motion.div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

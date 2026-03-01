@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Megaphone, MessageSquare } from 'lucide-react';
+import { Megaphone, MessageSquare, Users, Gift } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAdminFeedbackStore } from '@/stores/adminFeedbackStore';
 import { cn } from '@/lib/utils';
@@ -36,6 +36,18 @@ export function AdminNav() {
       icon: MessageSquare,
       isActive: pathname.startsWith('/admin/feedbacks'),
       badge: unreadCount,
+    },
+    {
+      label: '회원 관리',
+      href: '/admin/users',
+      icon: Users,
+      isActive: pathname.startsWith('/admin/users'),
+    },
+    {
+      label: '럭키드로우 관리',
+      href: '/admin/draws',
+      icon: Gift,
+      isActive: pathname.startsWith('/admin/draws'),
     },
   ];
 
