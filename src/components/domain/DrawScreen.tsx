@@ -713,18 +713,18 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
-                        className="border-2 border-gum-black bg-bg-subtle p-3 flex flex-col items-center gap-2 shadow-brutal-sm"
+                        className="border-2 border-gum-black bg-bg-subtle p-3 flex flex-col items-center justify-center gap-2 shadow-brutal-sm h-28"
                       >
                         {result.imageUrl ? (
-                          <div className="w-16 h-16 border border-gum-black overflow-hidden">
+                          <div className="w-14 h-14 border border-gum-black overflow-hidden flex-shrink-0">
                             <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
                           </div>
                         ) : (
-                          <div className="w-16 h-16 border border-gum-black bg-gum-pink/10 flex items-center justify-center">
+                          <div className="w-14 h-14 border border-gum-black bg-gum-pink/10 flex items-center justify-center flex-shrink-0">
                             <span className="text-2xl font-display text-gum-pink">{result.name.charAt(0)}</span>
                           </div>
                         )}
-                        <span className="text-gum-black font-bold text-xs text-center leading-tight">{result.name}</span>
+                        <span className="text-gum-black font-bold text-xs text-center leading-tight line-clamp-2 w-full">{result.name}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -866,19 +866,19 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
                     >
-                      <GlassCard className="flex flex-col items-center gap-2 !p-4">
+                      <GlassCard className="flex flex-col items-center justify-center gap-2 !p-3 h-28">
                         {result.imageUrl ? (
-                          <div className="w-16 h-16 rounded-full overflow-hidden"
+                          <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0"
                             style={{ border: '1px solid rgba(100,200,176,0.3)' }}>
                             <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
                           </div>
                         ) : (
-                          <div className="w-16 h-16 rounded-full bg-accent-tertiary/30 flex items-center justify-center"
+                          <div className="w-14 h-14 rounded-full bg-accent-tertiary/30 flex items-center justify-center flex-shrink-0"
                             style={{ border: '1px solid rgba(100,200,176,0.3)' }}>
                             <span className="text-2xl font-display" style={{ color: 'var(--color-accent-primary)' }}>{result.name.charAt(0)}</span>
                           </div>
                         )}
-                        <span className="font-display text-sm text-text-primary text-center leading-tight">{result.name}</span>
+                        <span className="font-display text-xs text-text-primary text-center leading-tight line-clamp-2 w-full">{result.name}</span>
                       </GlassCard>
                     </motion.div>
                   ))}
@@ -1012,17 +1012,17 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
                   >
-                    <GlassCard className="flex flex-col items-center gap-2 !p-4">
+                    <GlassCard className="flex flex-col items-center justify-center gap-2 !p-3 h-28">
                       {result.imageUrl ? (
-                        <div className="w-16 h-16 border-3 border-gum-black bg-bg-subtle shadow-brutal-sm overflow-hidden">
+                        <div className="w-14 h-14 border-3 border-gum-black bg-bg-subtle shadow-brutal-sm overflow-hidden flex-shrink-0">
                           <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className="w-16 h-16 border-3 border-gum-black bg-gum-pink/10 shadow-brutal-sm flex items-center justify-center">
+                        <div className="w-14 h-14 border-3 border-gum-black bg-gum-pink/10 shadow-brutal-sm flex items-center justify-center flex-shrink-0">
                           <span className="text-2xl font-display text-gum-pink">{result.name.charAt(0)}</span>
                         </div>
                       )}
-                      <span className="font-display text-sm text-gum-black text-center leading-tight">{result.name}</span>
+                      <span className="font-display text-xs text-gum-black text-center leading-tight line-clamp-2 w-full">{result.name}</span>
                     </GlassCard>
                   </motion.div>
                 ))}
