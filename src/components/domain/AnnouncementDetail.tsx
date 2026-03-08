@@ -34,12 +34,6 @@ function AnnouncementContent({ announcement, onClose, showClose, isAdmin }: {
 
   const handleShare = async () => {
     const url = `${window.location.origin}/announcements/${announcement.id}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: announcement.title, url });
-        return;
-      } catch { /* fallback to clipboard */ }
-    }
     await navigator.clipboard.writeText(url);
     addToast({ type: 'success', message: '링크가 복사되었습니다!' });
   };

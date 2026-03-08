@@ -19,14 +19,7 @@ export default function AnnouncementPageClient({ announcement }: { announcement:
   const isCottonCandy = useThemeStore((s) => s.currentTheme) === 'cotton-candy';
 
   const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: announcement.title, url });
-        return;
-      } catch { /* fallback to clipboard */ }
-    }
-    await navigator.clipboard.writeText(url);
+    await navigator.clipboard.writeText(window.location.href);
     addToast({ type: 'success', message: '링크가 복사되었습니다!' });
   };
 
