@@ -706,14 +706,14 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                   <span>[×]</span>
                 </div>
                 <div className="p-6 font-retro">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 max-h-[60vh] overflow-y-auto">
+                  <div className="flex flex-wrap justify-center gap-3 mb-6 max-h-[60vh] overflow-y-auto">
                     {bulkResults.map((result, i) => (
                       <motion.div
                         key={i}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
-                        className="border-2 border-gum-black bg-bg-subtle p-3 flex flex-col items-center justify-center gap-2 shadow-brutal-sm h-28"
+                        className="border-2 border-gum-black bg-bg-subtle p-3 flex flex-col items-center justify-center gap-2 shadow-brutal-sm h-28 w-28"
                       >
                         {result.imageUrl ? (
                           <div className="w-14 h-14 border border-gum-black overflow-hidden flex-shrink-0">
@@ -858,7 +858,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                   className="font-display text-3xl" style={{ color: 'var(--color-accent-primary)' }}>
                   {bulkResults.length}개 당첨!
                 </motion.p>
-                <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto">
+                <div className="w-full flex flex-wrap justify-center gap-3 max-h-[55vh] overflow-y-auto">
                   {bulkResults.map((result, i) => (
                     <motion.div
                       key={i}
@@ -866,7 +866,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
                     >
-                      <GlassCard className="flex flex-col items-center justify-center gap-2 !p-3 h-28">
+                      <GlassCard className="flex flex-col items-center justify-center gap-2 !p-3 h-28 w-28">
                         {result.imageUrl ? (
                           <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0"
                             style={{ border: '1px solid rgba(100,200,176,0.3)' }}>
@@ -1004,7 +1004,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                 </div>
               </motion.div>
 
-              <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto">
+              <div className="w-full flex flex-wrap justify-center gap-3 max-h-[55vh] overflow-y-auto">
                 {bulkResults.map((result, i) => (
                   <motion.div
                     key={i}
@@ -1012,7 +1012,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
                   >
-                    <GlassCard className="flex flex-col items-center justify-center gap-2 !p-3 h-28">
+                    <GlassCard className="flex flex-col items-center justify-center gap-2 !p-3 h-28 w-28">
                       {result.imageUrl ? (
                         <div className="w-14 h-14 border-3 border-gum-black bg-bg-subtle shadow-brutal-sm overflow-hidden flex-shrink-0">
                           <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
