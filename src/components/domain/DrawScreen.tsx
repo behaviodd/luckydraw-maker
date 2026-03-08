@@ -706,26 +706,25 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                   <span>[×]</span>
                 </div>
                 <div className="p-6 font-retro">
-                  <div className="border-2 border-gum-black p-4 mb-6 max-h-[60vh] overflow-y-auto">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 max-h-[60vh] overflow-y-auto">
                     {bulkResults.map((result, i) => (
                       <motion.div
                         key={i}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="flex items-center gap-3 py-2 border-b border-gum-black/10 last:border-b-0"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
+                        className="border-2 border-gum-black bg-bg-subtle p-3 flex flex-col items-center gap-2 shadow-brutal-sm"
                       >
-                        <span className="text-text-secondary w-6 text-right">{i + 1}.</span>
                         {result.imageUrl ? (
-                          <div className="w-10 h-10 border border-gum-black overflow-hidden flex-shrink-0">
+                          <div className="w-16 h-16 border border-gum-black overflow-hidden">
                             <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
                           </div>
                         ) : (
-                          <div className="w-10 h-10 border border-gum-black bg-gum-pink/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm font-display text-gum-pink">{result.name.charAt(0)}</span>
+                          <div className="w-16 h-16 border border-gum-black bg-gum-pink/10 flex items-center justify-center">
+                            <span className="text-2xl font-display text-gum-pink">{result.name.charAt(0)}</span>
                           </div>
                         )}
-                        <span className="text-gum-black font-bold">{result.name}</span>
+                        <span className="text-gum-black font-bold text-xs text-center leading-tight">{result.name}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -852,35 +851,34 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
             {/* ── 상태 D: 한번에 뽑기 결과 ── */}
             {!isDrawing && hasBulkResults && (
               <motion.div key="bulk" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex flex-col items-center gap-6 relative w-full max-w-md">
+                className="flex flex-col items-center gap-6 relative w-full max-w-lg">
                 <CandyConfetti />
                 <motion.p initial={{ scale: 0 }} animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 180, damping: 14 }}
                   className="font-display text-3xl" style={{ color: 'var(--color-accent-primary)' }}>
                   {bulkResults.length}개 당첨!
                 </motion.p>
-                <div className="w-full max-h-[55vh] overflow-y-auto space-y-2">
+                <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto">
                   {bulkResults.map((result, i) => (
                     <motion.div
                       key={i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.08 }}
+                      initial={{ opacity: 0, scale: 0.7 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
                     >
-                      <GlassCard className="flex items-center gap-3 !p-3">
-                        <span className="text-xs text-text-secondary w-5 text-right font-mono">{i + 1}</span>
+                      <GlassCard className="flex flex-col items-center gap-2 !p-4">
                         {result.imageUrl ? (
-                          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                          <div className="w-16 h-16 rounded-full overflow-hidden"
                             style={{ border: '1px solid rgba(100,200,176,0.3)' }}>
                             <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
                           </div>
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-accent-tertiary/30 flex items-center justify-center flex-shrink-0"
+                          <div className="w-16 h-16 rounded-full bg-accent-tertiary/30 flex items-center justify-center"
                             style={{ border: '1px solid rgba(100,200,176,0.3)' }}>
-                            <span className="text-sm font-display" style={{ color: 'var(--color-accent-primary)' }}>{result.name.charAt(0)}</span>
+                            <span className="text-2xl font-display" style={{ color: 'var(--color-accent-primary)' }}>{result.name.charAt(0)}</span>
                           </div>
                         )}
-                        <span className="font-display text-text-primary">{result.name}</span>
+                        <span className="font-display text-sm text-text-primary text-center leading-tight">{result.name}</span>
                       </GlassCard>
                     </motion.div>
                   ))}
@@ -992,7 +990,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
           {/* Bulk Results */}
           {!isDrawing && hasBulkResults && (
             <motion.div key="bulk" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="flex flex-col items-center gap-6 relative w-full max-w-md">
+              className="flex flex-col items-center gap-6 relative w-full max-w-lg">
               <ConfettiPieces />
               <motion.div initial={{ scale: 0, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 12 }} className="text-center">
@@ -1006,26 +1004,25 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                 </div>
               </motion.div>
 
-              <div className="w-full max-h-[55vh] overflow-y-auto space-y-2">
+              <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[55vh] overflow-y-auto">
                 {bulkResults.map((result, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.08 }}
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
                   >
-                    <GlassCard className="flex items-center gap-3 !p-3">
-                      <span className="text-xs text-text-secondary w-5 text-right font-mono">{i + 1}</span>
+                    <GlassCard className="flex flex-col items-center gap-2 !p-4">
                       {result.imageUrl ? (
-                        <div className="w-10 h-10 border-2 border-gum-black bg-bg-subtle overflow-hidden flex-shrink-0">
+                        <div className="w-16 h-16 border-3 border-gum-black bg-bg-subtle shadow-brutal-sm overflow-hidden">
                           <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className="w-10 h-10 border-2 border-gum-black bg-gum-pink/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-sm font-display text-gum-pink">{result.name.charAt(0)}</span>
+                        <div className="w-16 h-16 border-3 border-gum-black bg-gum-pink/10 shadow-brutal-sm flex items-center justify-center">
+                          <span className="text-2xl font-display text-gum-pink">{result.name.charAt(0)}</span>
                         </div>
                       )}
-                      <span className="font-display text-gum-black">{result.name}</span>
+                      <span className="font-display text-sm text-gum-black text-center leading-tight">{result.name}</span>
                     </GlassCard>
                   </motion.div>
                 ))}
