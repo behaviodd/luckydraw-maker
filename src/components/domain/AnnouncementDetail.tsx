@@ -92,6 +92,7 @@ function AnnouncementContent({ announcement, onClose, showClose, isAdmin }: {
           'prose prose-sm max-w-none',
           isAdmin
             ? [
+                'font-body',
                 'prose-headings:font-semibold prose-headings:text-text-primary',
                 'prose-h1:text-xl prose-h2:text-lg prose-h3:text-base',
                 'prose-p:text-text-primary prose-p:leading-relaxed',
