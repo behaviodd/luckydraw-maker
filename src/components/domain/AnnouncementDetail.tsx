@@ -108,7 +108,7 @@ function AnnouncementContent({ announcement, onClose, showClose, isAdmin }: {
               ].join(' ')
             : [
                 'font-body',
-                'prose-headings:font-display prose-headings:text-gum-black',
+                'prose-headings:font-body prose-headings:font-bold prose-headings:text-gum-black',
                 'prose-h1:text-xl prose-h2:text-lg prose-h3:text-base',
                 'prose-p:text-text-primary prose-p:leading-relaxed',
                 'prose-a:text-gum-pink prose-a:underline prose-a:font-bold',
