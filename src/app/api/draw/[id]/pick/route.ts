@@ -16,12 +16,21 @@ export async function POST(
     return NextResponse.json({ success: false, error: 'invalid_id' }, { status: 400 });
   }
 
-  // Rate Limit: IP + 드로우별 분당 10회
+  // count 파라미터 (한번에 뽑기용, 기본 1, 최대 10)
+  let count = 1;
+  try {
+    const body = await request.json().catch(() => ({}));
+    if (body.count && typeof body.count === 'number' && body.count >= 1) {
+      count = Math.min(Math.floor(body.count), 10);
+    }
+  } catch { /* body 없으면 기본값 */ }
+
+  // Rate Limit: IP + 드로우별 분당 30회 (한번에 뽑기 고려)
   const forwarded = request.headers.get('x-forwarded-for');
   const ip = forwarded
     ? forwarded.split(',')[0].trim()
     : request.headers.get('x-real-ip') ?? 'unknown';
-  const { allowed } = checkRateLimit(`draw-pick:${id}:${ip}`, 10, 60_000);
+  const { allowed } = checkRateLimit(`draw-pick:${id}:${ip}`, 30, 60_000);
   if (!allowed) {
     return NextResponse.json(
       { success: false, error: 'rate_limited' },
@@ -42,52 +51,97 @@ export async function POST(
   }
 
   const items = (draw.draw_items as { id: string; name: string; remaining: number; image_url: string | null }[]) ?? [];
-  const available = items.filter((item) => item.remaining > 0);
+  const probabilityMode = draw.probability_mode;
 
-  if (available.length === 0) {
-    return NextResponse.json({ success: false, exhausted: true });
-  }
+  // 로컬 remaining 복사본 (반복 추첨 시 차감 반영)
+  const localRemaining = new Map(items.map((item) => [item.id, item.remaining]));
 
-  // 서버 추첨 로직
-  let winner: typeof available[0];
+  function pickWinner() {
+    const available = items.filter((item) => (localRemaining.get(item.id) ?? 0) > 0);
+    if (available.length === 0) return null;
 
-  if (draw.probability_mode === 'equal') {
-    winner = available[Math.floor(Math.random() * available.length)];
-  } else {
+    if (probabilityMode === 'equal') {
+      return available[Math.floor(Math.random() * available.length)];
+    }
     // weighted: remaining 가중치
-    const totalRemaining = available.reduce((sum, item) => sum + item.remaining, 0);
+    const totalRemaining = available.reduce((sum, item) => sum + (localRemaining.get(item.id) ?? 0), 0);
     let random = Math.random() * totalRemaining;
-    winner = available[available.length - 1]; // fallback
+    let winner = available[available.length - 1];
     for (const item of available) {
-      random -= item.remaining;
-      if (random <= 0) {
-        winner = item;
-        break;
+      random -= localRemaining.get(item.id) ?? 0;
+      if (random <= 0) { winner = item; break; }
+    }
+    return winner;
+  }
+
+  // 단건 추첨 (count === 1)
+  if (count === 1) {
+    const winner = pickWinner();
+    if (!winner) {
+      return NextResponse.json({ success: false, exhausted: true });
+    }
+
+    const { data: rpcResult } = await supabase.rpc('decrement_item_quantity', {
+      p_item_id: winner.id,
+    });
+
+    if (!rpcResult?.success) {
+      if (rpcResult?.error === 'draw_not_active') {
+        return NextResponse.json({ success: false, error: 'draw_not_active' }, { status: 403 });
       }
+      return NextResponse.json({ success: false, error: 'item_exhausted_retry' });
     }
+
+    return NextResponse.json({
+      success: true,
+      item: {
+        id: winner.id,
+        name: winner.name,
+        imageUrl: winner.image_url,
+      },
+      remaining: rpcResult.remaining,
+    });
   }
 
-  // 수량 차감 (atomic RPC — SECURITY DEFINER, is_active 검증 포함)
-  const { data: rpcResult } = await supabase.rpc('decrement_item_quantity', {
-    p_item_id: winner.id,
-  });
+  // 복수 추첨 (count > 1)
+  const results: { id: string; name: string; imageUrl: string | null; remaining: number }[] = [];
 
-  if (!rpcResult?.success) {
-    if (rpcResult?.error === 'draw_not_active') {
-      return NextResponse.json({ success: false, error: 'draw_not_active' }, { status: 403 });
+  for (let i = 0; i < count; i++) {
+    const winner = pickWinner();
+    if (!winner) break; // 재고 소진
+
+    const { data: rpcResult } = await supabase.rpc('decrement_item_quantity', {
+      p_item_id: winner.id,
+    });
+
+    if (!rpcResult?.success) {
+      if (rpcResult?.error === 'draw_not_active') {
+        // 이미 뽑은 것들이 있으면 부분 결과 반환
+        if (results.length > 0) break;
+        return NextResponse.json({ success: false, error: 'draw_not_active' }, { status: 403 });
+      }
+      continue; // 해당 아이템 소진 → 다음 시도
     }
-    // 동시 요청으로 소진된 경우
-    return NextResponse.json({ success: false, error: 'item_exhausted_retry' });
-  }
 
-  // 클라이언트에는 결과만 반환 (quantity, remaining 미포함)
-  return NextResponse.json({
-    success: true,
-    item: {
+    // 로컬 remaining 갱신 (다음 추첨에 반영)
+    localRemaining.set(winner.id, rpcResult.remaining);
+
+    results.push({
       id: winner.id,
       name: winner.name,
       imageUrl: winner.image_url,
-    },
-    remaining: rpcResult.remaining,
+      remaining: rpcResult.remaining,
+    });
+  }
+
+  if (results.length === 0) {
+    return NextResponse.json({ success: false, exhausted: true });
+  }
+
+  return NextResponse.json({
+    success: true,
+    bulk: true,
+    items: results,
+    count: results.length,
   });
 }

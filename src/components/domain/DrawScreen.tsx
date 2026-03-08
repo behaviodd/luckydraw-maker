@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RotateCcw, Ticket } from 'lucide-react';
+import { RotateCcw, Ticket, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDrawStore } from '@/stores/drawStore';
 import { useThemeStore } from '@/stores/themeStore';
@@ -326,6 +326,9 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
   const [showTicketPanel, setShowTicketPanel] = useState(true);
   const ticketOptions = draw.ticketOptions?.length ? draw.ticketOptions : [1, 2, 3, 5, 10];
 
+  // 한번에 뽑기 결과
+  const [bulkResults, setBulkResults] = useState<PickResult[]>([]);
+
   const handleTicketGrant = (n: number) => {
     if (currentTickets > 0) {
       setTicketConfirm(n); // 잔여 있으면 확인 다이얼로그
@@ -420,8 +423,52 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
     }
   }, [draw.id, isDrawing, exhausted, allExhaustedByItems, ticketBlocked, isOwner, setIsDrawing, setLastResult, addToast, onItemDecremented, handleDrawError]);
 
+  // 한번에 뽑기 — 부여된 횟수만큼 일괄 추첨
+  const handleBulkDraw = useCallback(async () => {
+    if (isDrawing || exhausted || allExhaustedByItems || !isOwner || currentTickets <= 0) return;
+    setIsDrawing(true);
+    setBulkResults([]);
+
+    try {
+      const [data] = await Promise.all([
+        fetch(`/api/draw/${draw.id}/pick`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ count: currentTickets }),
+        }).then((r) => r.json()),
+        new Promise((resolve) => setTimeout(resolve, MIN_SPIN_DURATION)),
+      ]);
+
+      if (!data.success) {
+        handleDrawError(data);
+        return;
+      }
+
+      if (data.bulk) {
+        const results: PickResult[] = data.items.map((item: { name: string; imageUrl: string | null; id: string; remaining: number }) => ({
+          name: item.name,
+          imageUrl: item.imageUrl,
+        }));
+        setBulkResults(results);
+        setCurrentTickets(0);
+
+        // onItemDecremented 콜백 — 각 아이템별 remaining 업데이트
+        if (onItemDecremented) {
+          for (const item of data.items) {
+            onItemDecremented(item.id, item.remaining);
+          }
+        }
+      }
+    } catch {
+      addToast({ type: 'error', message: '네트워크 오류가 발생했습니다. 다시 시도해주세요.' });
+    } finally {
+      setIsDrawing(false);
+    }
+  }, [draw.id, isDrawing, exhausted, allExhaustedByItems, isOwner, currentTickets, setIsDrawing, addToast, onItemDecremented, handleDrawError]);
+
   const handleReset = () => {
     setLastResult(null);
+    setBulkResults([]);
     // 횟수 소진 시 자동으로 패널 다시 열기
     if (isOwner && currentTickets <= 0) {
       setShowTicketPanel(true);
@@ -536,6 +583,26 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
     );
   };
 
+  // "한번에 뽑기" 버튼 — owner 모드, 티켓 2장 이상일 때만 표시
+  const renderBulkDrawButton = () => {
+    if (!isOwner || currentTickets < 2 || isAllExhausted) return null;
+    return (
+      <Button
+        type="button"
+        variant="secondary"
+        disabled={isDrawing}
+        isLoading={isDrawing}
+        onClick={handleBulkDraw}
+        className="!text-sm"
+      >
+        <Zap className="w-4 h-4" /> {currentTickets}회 한번에 뽑기
+      </Button>
+    );
+  };
+
+  // 한번에 뽑기 결과 화면
+  const hasBulkResults = bulkResults.length > 0;
+
   /* ── retro-pc 렌더 ── */
   if (isRetro) {
     return (
@@ -543,7 +610,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
         <div className="flex-1 flex items-center justify-center relative z-10 p-6">
           <div className="w-full max-w-lg">
             {/* Idle */}
-            {!isDrawing && !lastResult && (
+            {!isDrawing && !lastResult && !hasBulkResults && (
               <div className="border-2 border-gum-black bg-bg-card shadow-brutal">
                 <div className="retro-titlebar">
                   <span>■ LUCKY DRAW SYSTEM v1.0</span>
@@ -563,8 +630,9 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                         <p className="text-gum-black font-bold">모든 아이템이 소진되었습니다.</p>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center">
+                      <div className="flex flex-col items-center gap-3">
                         <Button variant="draw" disabled={drawDisabled} isLoading={isDrawing} onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                        {renderBulkDrawButton()}
                         {renderTicketStatus()}
                       </div>
                     )}
@@ -595,7 +663,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
               </div>
             )}
 
-            {/* Result */}
+            {/* Single Result */}
             {!isDrawing && lastResult && (
               <div className="border-2 border-gum-black bg-bg-card shadow-brutal">
                 <div className="retro-titlebar">
@@ -629,6 +697,46 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                 </div>
               </div>
             )}
+
+            {/* Bulk Results */}
+            {!isDrawing && hasBulkResults && (
+              <div className="border-2 border-gum-black bg-bg-card shadow-brutal">
+                <div className="retro-titlebar">
+                  <span>■ 일괄 추첨 결과 ({bulkResults.length}건)</span>
+                  <span>[×]</span>
+                </div>
+                <div className="p-6 font-retro">
+                  <div className="border-2 border-gum-black p-4 mb-6 max-h-[60vh] overflow-y-auto">
+                    {bulkResults.map((result, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="flex items-center gap-3 py-2 border-b border-gum-black/10 last:border-b-0"
+                      >
+                        <span className="text-text-secondary w-6 text-right">{i + 1}.</span>
+                        {result.imageUrl ? (
+                          <div className="w-10 h-10 border border-gum-black overflow-hidden flex-shrink-0">
+                            <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 border border-gum-black bg-gum-pink/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm font-display text-gum-pink">{result.name.charAt(0)}</span>
+                          </div>
+                        )}
+                        <span className="text-gum-black font-bold">{result.name}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center">
+                    <Button variant="primary" onClick={handleReset}>
+                      <RotateCcw className="w-4 h-4" /> 다시 뽑기
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         {renderTicketPanel()}
@@ -643,7 +751,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
         <div className="flex-1 flex items-center justify-center relative z-10 p-6">
           <AnimatePresence mode="wait">
             {/* ── 상태 A: 대기 ── */}
-            {!isDrawing && !lastResult && (
+            {!isDrawing && !lastResult && !hasBulkResults && (
               <motion.div key="idle" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
                 className="flex flex-col items-center gap-8">
                 <div className="text-center">
@@ -667,6 +775,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                   <>
                     {isOwner && <CandyItemPreview draw={draw} />}
                     <Button variant="draw" disabled={drawDisabled} isLoading={isDrawing} onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                    {renderBulkDrawButton()}
                     {renderTicketStatus()}
                   </>
                 )}
@@ -739,6 +848,50 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                 </motion.div>
               </motion.div>
             )}
+
+            {/* ── 상태 D: 한번에 뽑기 결과 ── */}
+            {!isDrawing && hasBulkResults && (
+              <motion.div key="bulk" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="flex flex-col items-center gap-6 relative w-full max-w-md">
+                <CandyConfetti />
+                <motion.p initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 180, damping: 14 }}
+                  className="font-display text-3xl" style={{ color: 'var(--color-accent-primary)' }}>
+                  {bulkResults.length}개 당첨!
+                </motion.p>
+                <div className="w-full max-h-[55vh] overflow-y-auto space-y-2">
+                  {bulkResults.map((result, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.08 }}
+                    >
+                      <GlassCard className="flex items-center gap-3 !p-3">
+                        <span className="text-xs text-text-secondary w-5 text-right font-mono">{i + 1}</span>
+                        {result.imageUrl ? (
+                          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                            style={{ border: '1px solid rgba(100,200,176,0.3)' }}>
+                            <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-accent-tertiary/30 flex items-center justify-center flex-shrink-0"
+                            style={{ border: '1px solid rgba(100,200,176,0.3)' }}>
+                            <span className="text-sm font-display" style={{ color: 'var(--color-accent-primary)' }}>{result.name.charAt(0)}</span>
+                          </div>
+                        )}
+                        <span className="font-display text-text-primary">{result.name}</span>
+                      </GlassCard>
+                    </motion.div>
+                  ))}
+                </div>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                  <Button variant="primary" onClick={handleReset}>
+                    <RotateCcw className="w-4 h-4" /> 다시 뽑기
+                  </Button>
+                </motion.div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
         {renderTicketPanel()}
@@ -752,7 +905,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
       <div className="flex-1 flex items-center justify-center relative z-10 p-6">
         <AnimatePresence mode="wait">
           {/* Idle */}
-          {!isDrawing && !lastResult && (
+          {!isDrawing && !lastResult && !hasBulkResults && (
             <motion.div key="idle" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
               className="flex flex-col items-center gap-8">
               <div className="text-center">
@@ -776,6 +929,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                 <>
                   {isOwner && <ItemPreview draw={draw} />}
                   <Button variant="draw" disabled={drawDisabled} isLoading={isDrawing} onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                  {renderBulkDrawButton()}
                   {renderTicketStatus()}
                 </>
               )}
@@ -794,7 +948,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
             </motion.div>
           )}
 
-          {/* Result */}
+          {/* Single Result */}
           {!isDrawing && lastResult && (
             <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="flex flex-col items-center gap-8 relative w-full">
@@ -828,6 +982,56 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+                <Button variant="secondary" onClick={handleReset}>
+                  <RotateCcw className="w-4 h-4" /> 다시 뽑기
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Bulk Results */}
+          {!isDrawing && hasBulkResults && (
+            <motion.div key="bulk" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="flex flex-col items-center gap-6 relative w-full max-w-md">
+              <ConfettiPieces />
+              <motion.div initial={{ scale: 0, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 12 }} className="text-center">
+                <p className="font-display text-4xl text-gum-pink mb-2">{bulkResults.length}개 당첨!</p>
+                <div className="flex justify-center gap-1">
+                  {['🎉', '✨', '🎊'].map((e, i) => (
+                    <motion.span key={i} className="text-2xl"
+                      animate={{ y: [0, -8, 0], rotate: [0, 15, -15, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}>{e}</motion.span>
+                  ))}
+                </div>
+              </motion.div>
+
+              <div className="w-full max-h-[55vh] overflow-y-auto space-y-2">
+                {bulkResults.map((result, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                  >
+                    <GlassCard className="flex items-center gap-3 !p-3">
+                      <span className="text-xs text-text-secondary w-5 text-right font-mono">{i + 1}</span>
+                      {result.imageUrl ? (
+                        <div className="w-10 h-10 border-2 border-gum-black bg-bg-subtle overflow-hidden flex-shrink-0">
+                          <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 border-2 border-gum-black bg-gum-pink/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm font-display text-gum-pink">{result.name.charAt(0)}</span>
+                        </div>
+                      )}
+                      <span className="font-display text-gum-black">{result.name}</span>
+                    </GlassCard>
+                  </motion.div>
+                ))}
+              </div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
                 <Button variant="secondary" onClick={handleReset}>
                   <RotateCcw className="w-4 h-4" /> 다시 뽑기
                 </Button>
