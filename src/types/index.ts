@@ -50,6 +50,17 @@ export interface DrawResult {
   isNew: boolean;
 }
 
+// DB 당첨 로그용 타입 (클라이언트용 DrawResult와 구분)
+export interface DrawResultLog {
+  id: string;
+  drawId: string;
+  itemId: string;
+  itemName: string;
+  itemImage: string | null;
+  ticketsUsed: number;
+  createdAt: string;
+}
+
 export interface Toast {
   id: string;
   type: 'success' | 'error' | 'info';

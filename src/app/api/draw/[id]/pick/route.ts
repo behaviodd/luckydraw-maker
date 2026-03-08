@@ -92,6 +92,19 @@ export async function POST(
       return NextResponse.json({ success: false, error: 'item_exhausted_retry' });
     }
 
+    // 당첨 내역 저장 (실패해도 뽑기 결과에 영향 없음)
+    supabase
+      .from('draw_results')
+      .insert({
+        draw_id: id,
+        item_id: winner.id,
+        item_name: winner.name,
+        item_image: winner.image_url ?? null,
+      })
+      .then(({ error }) => {
+        if (error) console.error('[draw_results] insert failed:', error.message);
+      });
+
     return NextResponse.json({
       success: true,
       item: {
@@ -137,6 +150,22 @@ export async function POST(
   if (results.length === 0) {
     return NextResponse.json({ success: false, exhausted: true });
   }
+
+  // 복수 당첨 내역 일괄 저장 (fire-and-forget)
+  supabase
+    .from('draw_results')
+    .insert(
+      results.map((r) => ({
+        draw_id: id,
+        item_id: r.id,
+        item_name: r.name,
+        item_image: r.imageUrl ?? null,
+        tickets_used: 1,
+      }))
+    )
+    .then(({ error }) => {
+      if (error) console.error('[draw_results] bulk insert failed:', error.message);
+    });
 
   return NextResponse.json({
     success: true,
