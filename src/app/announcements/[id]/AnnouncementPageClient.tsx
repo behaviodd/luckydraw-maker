@@ -27,7 +27,7 @@ export default function AnnouncementPageClient({ announcement }: { announcement:
     <div className="relative z-10 max-w-2xl mx-auto px-6 py-8">
       {/* 헤더 */}
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" onClick={() => router.push('/')}>
+        <Button variant="ghost" onClick={() => router.back()}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="font-display text-lg text-gum-black flex-1">공지사항</h1>
