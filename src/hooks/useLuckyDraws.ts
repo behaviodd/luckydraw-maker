@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { useUIStore } from '@/stores/uiStore';
 import type { LuckyDraw, DrawItem } from '@/types';
@@ -13,6 +14,7 @@ function mapDraw(row: Record<string, unknown>): LuckyDraw {
     drawButtonLabel: row.draw_button_label as string,
     probabilityMode: row.probability_mode as 'equal' | 'weighted',
     isActive: row.is_active as boolean,
+    ticketOptions: (row.ticket_options as number[] | null) ?? [1, 2, 3, 5, 10],
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
     items: Array.isArray(row.draw_items)
@@ -44,7 +46,7 @@ export function useLuckyDraws(userId?: string) {
     setLoading(true);
     const { data, error } = await supabase
       .from('lucky_draws')
-      .select('id, name, draw_button_label, probability_mode, is_active, created_at, updated_at, draw_items(id, draw_id, name, quantity, remaining, image_url, sort_order)')
+      .select('id, name, draw_button_label, probability_mode, is_active, ticket_options, created_at, updated_at, draw_items(id, draw_id, name, quantity, remaining, image_url, sort_order)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -76,8 +78,9 @@ export function useLuckyDraws(userId?: string) {
 
 /**
  * @param requireOwnership true이면 draw.userId !== 현재 유저 시 null 반환 (소유권 이중 검증)
+ * @param enableRealtime true이면 draw_items 변경을 실시간 구독 (현장 대시보드용)
  */
-export function useLuckyDraw(id: string, requireOwnership = false) {
+export function useLuckyDraw(id: string, requireOwnership = false, enableRealtime = false) {
   const [draw, setDraw] = useState<LuckyDraw | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -87,7 +90,7 @@ export function useLuckyDraw(id: string, requireOwnership = false) {
       setLoading(true);
       const { data } = await supabase
         .from('lucky_draws')
-        .select('id, user_id, name, draw_button_label, probability_mode, is_active, created_at, updated_at, draw_items(id, draw_id, name, quantity, remaining, image_url, sort_order)')
+        .select('id, user_id, name, draw_button_label, probability_mode, is_active, ticket_options, created_at, updated_at, draw_items(id, draw_id, name, quantity, remaining, image_url, sort_order)')
         .eq('id', id)
         .single();
 
@@ -110,6 +113,60 @@ export function useLuckyDraw(id: string, requireOwnership = false) {
     };
     fetch();
   }, [id, supabase, requireOwnership]);
+
+  // Supabase Realtime: draw_items 재고 변경 실시간 구독
+  useEffect(() => {
+    if (!enableRealtime || !draw) return;
+
+    const channel = supabase
+      .channel(`draw-items-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'draw_items',
+          filter: `draw_id=eq.${id}`,
+        },
+        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+          const updated = payload.new as Record<string, unknown>;
+          setDraw((prev) => {
+            if (!prev?.items) return prev;
+            return {
+              ...prev,
+              items: prev.items.map((item) =>
+                item.id === updated.id
+                  ? { ...item, remaining: updated.remaining as number }
+                  : item
+              ),
+            };
+          });
+
+          // 재고 20% 이하 브라우저 알림
+          const remaining = updated.remaining as number;
+          const quantity = updated.quantity as number;
+          const name = updated.name as string;
+          if (remaining > 0 && remaining / quantity < 0.2) {
+            if (typeof Notification !== 'undefined') {
+              if (Notification.permission === 'default') {
+                Notification.requestPermission();
+              }
+              if (Notification.permission === 'granted') {
+                new Notification('재고 부족', {
+                  body: `${name} ${remaining}개 남음`,
+                  icon: '/favicon.ico',
+                });
+              }
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [enableRealtime, !!draw, id, supabase]);
 
   return { draw, setDraw, loading };
 }

@@ -20,6 +20,7 @@ export default function PlayClient({ drawData }: PlayClientProps) {
     drawButtonLabel: drawData.drawButtonLabel,
     probabilityMode: 'equal', // play 모드에서 사용하지 않음
     isActive: true,
+    ticketOptions: [],
     createdAt: '',
     updatedAt: '',
     // items 없음 — 서버 API에서 추첨

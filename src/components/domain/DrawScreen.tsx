@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Ticket } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useDrawStore } from '@/stores/drawStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -317,9 +318,36 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
   const isCottonCandy = currentTheme === 'cotton-candy';
   const { isDrawing, setIsDrawing, lastResult, setLastResult } = useDrawStore();
   const [exhausted, setExhausted] = useState(false);
+  const isOwner = mode === 'owner';
+
+  // 횟수(ticket) 관리 — owner 모드 전용, 로컬 상태
+  const [currentTickets, setCurrentTickets] = useState(0);
+  const [ticketConfirm, setTicketConfirm] = useState<number | null>(null); // 교체 확인 다이얼로그
+  const [showTicketPanel, setShowTicketPanel] = useState(true);
+  const ticketOptions = draw.ticketOptions?.length ? draw.ticketOptions : [1, 2, 3, 5, 10];
+
+  const handleTicketGrant = (n: number) => {
+    if (currentTickets > 0) {
+      setTicketConfirm(n); // 잔여 있으면 확인 다이얼로그
+    } else {
+      setCurrentTickets(n);
+      setShowTicketPanel(false);
+    }
+  };
+
+  const confirmTicketReplace = () => {
+    if (ticketConfirm !== null) {
+      setCurrentTickets(ticketConfirm);
+      setTicketConfirm(null);
+      setShowTicketPanel(false);
+    }
+  };
 
   // owner 모드: 클라이언트 items로 소진 여부 판단
-  const allExhaustedByItems = mode === 'owner' && (draw.items ?? []).every((item) => item.remaining <= 0);
+  const allExhaustedByItems = isOwner && (draw.items ?? []).every((item) => item.remaining <= 0);
+
+  // owner 모드에서 횟수 0이면 뽑기 차단
+  const ticketBlocked = isOwner && currentTickets <= 0;
 
   useEffect(() => {
     setIsDrawing(false);
@@ -327,28 +355,40 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
     setExhausted(false);
   }, [setIsDrawing, setLastResult]);
 
+  const MIN_SPIN_DURATION = 2000; // 최소 2초 연출 보장
+
+  // 에러 케이스별 toast 메시지
+  const handleDrawError = useCallback((data: { error?: string; exhausted?: boolean }) => {
+    if (data.exhausted) {
+      setExhausted(true);
+      addToast({ type: 'info', message: '모든 경품이 소진되었습니다!' });
+      return;
+    }
+    const messages: Record<string, { type: 'error' | 'info'; message: string }> = {
+      draw_not_active: { type: 'info', message: '이벤트가 종료되었습니다.' },
+      rate_limited: { type: 'info', message: '잠시 후 다시 시도해주세요.' },
+      item_exhausted_retry: { type: 'info', message: '잠시 후 다시 시도해주세요.' },
+      no_remaining: { type: 'info', message: '모든 경품이 소진되었습니다.' },
+    };
+    const msg = messages[data.error ?? ''] ?? { type: 'error', message: '오류가 발생했습니다. 다시 시도해주세요.' };
+    addToast(msg);
+  }, [addToast]);
+
   // 서버 API 추첨 (owner + play 모두 사용)
+  // 핵심: API 호출과 최소 대기 타이머를 동시에 시작하여 연출 끊김 방지
   const handleDraw = useCallback(async () => {
-    if (exhausted || allExhaustedByItems) return;
+    if (isDrawing || exhausted || allExhaustedByItems || ticketBlocked) return;
     setIsDrawing(true);
 
-    // 애니메이션 후 API 호출
-    await new Promise((resolve) => setTimeout(resolve, 2500));
-
     try {
-      const res = await fetch(`/api/draw/${draw.id}/pick`, { method: 'POST' });
-      const data = await res.json();
+      // API 호출 + 최소 연출 시간을 병렬 실행
+      const [data] = await Promise.all([
+        fetch(`/api/draw/${draw.id}/pick`, { method: 'POST' }).then((r) => r.json()),
+        new Promise((resolve) => setTimeout(resolve, MIN_SPIN_DURATION)),
+      ]);
 
       if (!data.success) {
-        setIsDrawing(false);
-        if (data.exhausted) {
-          setExhausted(true);
-          addToast({ type: 'info', message: '모든 아이템이 소진되었습니다!' });
-        } else if (data.error === 'item_exhausted_retry') {
-          addToast({ type: 'info', message: '동시 요청으로 소진되었습니다. 다시 시도해주세요.' });
-        } else {
-          addToast({ type: 'error', message: '추첨에 실패했습니다.' });
-        }
+        handleDrawError(data);
         return;
       }
 
@@ -358,28 +398,143 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
           drawId: draw.id,
           name: data.item.name,
           imageUrl: data.item.imageUrl,
-          quantity: 0, // 클라이언트에 불필요 — placeholder
+          quantity: 0,
           remaining: data.remaining ?? 0,
           sortOrder: 0,
         },
         isNew: true,
       });
-      setIsDrawing(false);
+
+      // owner 모드: 뽑기 성공 시 횟수 차감
+      if (isOwner) {
+        setCurrentTickets((prev) => Math.max(0, prev - 1));
+      }
 
       if (onItemDecremented && data.item.id && data.remaining !== undefined) {
         onItemDecremented(data.item.id, data.remaining);
       }
     } catch {
+      addToast({ type: 'error', message: '네트워크 오류가 발생했습니다. 다시 시도해주세요.' });
+    } finally {
       setIsDrawing(false);
-      addToast({ type: 'error', message: '네트워크 오류가 발생했습니다.' });
     }
-  }, [draw.id, exhausted, allExhaustedByItems, setIsDrawing, setLastResult, addToast, onItemDecremented]);
+  }, [draw.id, isDrawing, exhausted, allExhaustedByItems, ticketBlocked, isOwner, setIsDrawing, setLastResult, addToast, onItemDecremented, handleDrawError]);
 
-  const handleReset = () => setLastResult(null);
+  const handleReset = () => {
+    setLastResult(null);
+    // 횟수 소진 시 자동으로 패널 다시 열기
+    if (isOwner && currentTickets <= 0) {
+      setShowTicketPanel(true);
+    }
+  };
   const isAllExhausted = exhausted || allExhaustedByItems;
 
   // owner 모드에서만 아이템 관련 정보 표시
-  const itemCount = mode === 'owner' ? (draw.items?.length ?? 0) : 0;
+  const itemCount = isOwner ? (draw.items?.length ?? 0) : 0;
+
+  // 뽑기 버튼 비활성화 조건
+  const drawDisabled = isDrawing || isAllExhausted || ticketBlocked;
+
+  // ── 횟수 부여 패널 (owner 전용) ──
+  const renderTicketPanel = () => {
+    if (!isOwner) return null;
+    return (
+      <>
+        {/* 횟수 부여 패널 */}
+        <AnimatePresence>
+          {showTicketPanel && !isDrawing && !lastResult && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 w-[calc(100vw-3rem)] max-w-lg"
+            >
+              <GlassCard className="!p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Ticket className="w-4 h-4 text-gum-pink" />
+                    <span className="font-display text-sm text-gum-black">횟수 부여</span>
+                  </div>
+                  {currentTickets > 0 && (
+                    <span className="text-xs font-mono text-text-secondary">
+                      잔여: {currentTickets}회
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {ticketOptions.map((n) => (
+                    <Button
+                      key={n}
+                      type="button"
+                      variant="secondary"
+                      className="!px-4 !py-3 !text-base font-display min-w-[56px]"
+                      onClick={() => handleTicketGrant(n)}
+                    >
+                      {n}회
+                    </Button>
+                  ))}
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 교체 확인 다이얼로그 */}
+        <AnimatePresence>
+          {ticketConfirm !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-gum-black/40"
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+              >
+                <GlassCard className="w-[calc(100vw-3rem)] max-w-sm !p-6">
+                  <p className="font-display text-lg text-gum-black mb-2">횟수 교체</p>
+                  <p className="text-sm text-text-secondary mb-6">
+                    현재 {currentTickets}회가 남아있습니다. {ticketConfirm}회로 교체할까요?
+                  </p>
+                  <div className="flex gap-3">
+                    <Button variant="secondary" className="flex-1" onClick={() => setTicketConfirm(null)}>취소</Button>
+                    <Button variant="primary" className="flex-1" onClick={confirmTicketReplace}>교체</Button>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  };
+
+  // ── 잔여 횟수 표시 (owner 전용, 뽑기 버튼 아래) ──
+  const renderTicketStatus = () => {
+    if (!isOwner) return null;
+    return (
+      <div className="flex items-center justify-center gap-1 mt-2">
+        <Ticket className="w-3.5 h-3.5 text-text-secondary" />
+        <span className={cn(
+          "text-sm font-mono",
+          currentTickets > 0 ? "text-gum-black" : "text-text-muted"
+        )}>
+          {currentTickets > 0 ? `${currentTickets}회 남음` : '횟수를 부여해주세요'}
+        </span>
+        {currentTickets <= 0 && (
+          <button
+            type="button"
+            className="text-xs text-gum-pink font-bold ml-2 underline"
+            onClick={() => setShowTicketPanel(true)}
+          >
+            부여하기
+          </button>
+        )}
+      </div>
+    );
+  };
 
   /* ── retro-pc 렌더 ── */
   if (isRetro) {
@@ -408,12 +563,13 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                         <p className="text-gum-black font-bold">모든 아이템이 소진되었습니다.</p>
                       </div>
                     ) : (
-                      <div className="flex justify-center">
-                        <Button variant="draw" onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                      <div className="flex flex-col items-center">
+                        <Button variant="draw" disabled={drawDisabled} isLoading={isDrawing} onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                        {renderTicketStatus()}
                       </div>
                     )}
                   </div>
-                  {!isAllExhausted && (
+                  {!isAllExhausted && !isOwner && (
                     <p className="text-text-secondary text-sm">
                       <span className="retro-cursor">버튼을 눌러 당첨자를 추첨하세요</span>
                     </p>
@@ -475,6 +631,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
             )}
           </div>
         </div>
+        {renderTicketPanel()}
       </div>
     );
   }
@@ -508,8 +665,9 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                   </GlassCard>
                 ) : (
                   <>
-                    {mode === 'owner' && <CandyItemPreview draw={draw} />}
-                    <Button variant="draw" onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                    {isOwner && <CandyItemPreview draw={draw} />}
+                    <Button variant="draw" disabled={drawDisabled} isLoading={isDrawing} onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                    {renderTicketStatus()}
                   </>
                 )}
               </motion.div>
@@ -583,6 +741,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
             )}
           </AnimatePresence>
         </div>
+        {renderTicketPanel()}
       </div>
     );
   }
@@ -615,8 +774,9 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
                 </GlassCard>
               ) : (
                 <>
-                  {mode === 'owner' && <ItemPreview draw={draw} />}
-                  <Button variant="draw" onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                  {isOwner && <ItemPreview draw={draw} />}
+                  <Button variant="draw" disabled={drawDisabled} isLoading={isDrawing} onClick={handleDraw}>{draw.drawButtonLabel}</Button>
+                  {renderTicketStatus()}
                 </>
               )}
             </motion.div>
@@ -676,6 +836,7 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
           )}
         </AnimatePresence>
       </div>
+      {renderTicketPanel()}
     </div>
   );
 }

@@ -24,6 +24,7 @@ export interface LuckyDraw {
   drawButtonLabel: string;
   probabilityMode: ProbabilityMode;
   isActive: boolean;
+  ticketOptions: number[];
   createdAt: string;
   updatedAt: string;
   items?: DrawItem[];

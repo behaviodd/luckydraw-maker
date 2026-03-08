@@ -44,6 +44,9 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
   const addToast = useUIStore((s) => s.addToast);
   const isCottonCandy = useThemeStore((s) => s.currentTheme) === 'cotton-candy';
   const [saving, setSaving] = useState(false);
+  const [ticketOptions, setTicketOptions] = useState<number[]>(
+    existingDraw?.ticketOptions ?? [1, 2, 3, 5, 10]
+  );
 
   const {
     register, control, handleSubmit, watch, setValue,
@@ -123,7 +126,8 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
       if (existingDraw) {
         const { error: drawError } = await supabase.from('lucky_draws').update({
           name: data.name, draw_button_label: data.drawButtonLabel,
-          probability_mode: data.probabilityMode, updated_at: new Date().toISOString(),
+          probability_mode: data.probabilityMode, ticket_options: ticketOptions,
+          updated_at: new Date().toISOString(),
         }).eq('id', existingDraw.id).eq('user_id', user.id);
         if (drawError) throw drawError;
         await supabase.from('draw_items').delete().eq('draw_id', existingDraw.id);
@@ -137,7 +141,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
       } else {
         const { data: drawData, error: drawError } = await supabase.from('lucky_draws').insert({
           user_id: user.id, name: data.name, draw_button_label: data.drawButtonLabel,
-          probability_mode: data.probabilityMode,
+          probability_mode: data.probabilityMode, ticket_options: ticketOptions,
         }).select().single();
         if (drawError) throw drawError;
         const { error: itemsError } = await supabase.from('draw_items').insert(
@@ -234,6 +238,42 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
                 </button>
               </div>
             </div>
+          </div>
+        </GlassCard>
+
+        <GlassCard>
+          <h2 className={cn("font-display text-lg mb-2", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>뽑기 횟수 버튼 설정</h2>
+          <p className="text-xs text-text-secondary mb-4">현장에서 손님에게 제공할 횟수 버튼을 선택하세요.</p>
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => {
+              const selected = ticketOptions.includes(n);
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => {
+                    if (selected && ticketOptions.length <= 1) return; // 최소 1개 유지
+                    setTicketOptions((prev) =>
+                      selected ? prev.filter((v) => v !== n) : [...prev, n].sort((a, b) => a - b)
+                    );
+                  }}
+                  className={cn(
+                    'w-12 h-12 text-sm font-display transition-all',
+                    isCottonCandy
+                      ? cn('border rounded-xl',
+                          selected
+                            ? 'border-accent-primary bg-accent-tertiary/30 text-text-primary shadow-[0_0_12px_rgba(125,212,190,0.2)]'
+                            : 'border-[rgba(100,200,176,0.2)] bg-bg-card text-text-muted hover:border-accent-primary')
+                      : cn('border-3',
+                          selected
+                            ? 'border-gum-black bg-gum-pink text-white shadow-brutal-sm'
+                            : 'border-gum-black/20 bg-bg-card text-text-muted hover:border-gum-black')
+                  )}
+                >
+                  {n}회
+                </button>
+              );
+            })}
           </div>
         </GlassCard>
 

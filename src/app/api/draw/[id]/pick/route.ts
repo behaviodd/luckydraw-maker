@@ -9,12 +9,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'unauthorized' }, { status: 401 });
-  }
-
   const { id } = await params;
 
   // 입력 검증: UUID 형식
@@ -22,8 +16,12 @@ export async function POST(
     return NextResponse.json({ success: false, error: 'invalid_id' }, { status: 400 });
   }
 
-  // Rate Limit: 사용자별 분당 10회
-  const { allowed } = checkRateLimit(`draw-pick:${user.id}`, 10, 60_000);
+  // Rate Limit: IP + 드로우별 분당 10회
+  const forwarded = request.headers.get('x-forwarded-for');
+  const ip = forwarded
+    ? forwarded.split(',')[0].trim()
+    : request.headers.get('x-real-ip') ?? 'unknown';
+  const { allowed } = checkRateLimit(`draw-pick:${id}:${ip}`, 10, 60_000);
   if (!allowed) {
     return NextResponse.json(
       { success: false, error: 'rate_limited' },
@@ -32,6 +30,7 @@ export async function POST(
   }
 
   // 드로우 + 아이템 조회 (서버에서만 quantity/remaining 접근)
+  // RLS: anon은 is_active=true인 드로우/아이템만 조회 가능
   const { data: draw, error: drawError } = await supabase
     .from('lucky_draws')
     .select('id, probability_mode, draw_items(id, name, remaining, image_url)')
@@ -68,12 +67,15 @@ export async function POST(
     }
   }
 
-  // 수량 차감 (atomic RPC)
+  // 수량 차감 (atomic RPC — SECURITY DEFINER, is_active 검증 포함)
   const { data: rpcResult } = await supabase.rpc('decrement_item_quantity', {
     p_item_id: winner.id,
   });
 
   if (!rpcResult?.success) {
+    if (rpcResult?.error === 'draw_not_active') {
+      return NextResponse.json({ success: false, error: 'draw_not_active' }, { status: 403 });
+    }
     // 동시 요청으로 소진된 경우
     return NextResponse.json({ success: false, error: 'item_exhausted_retry' });
   }
