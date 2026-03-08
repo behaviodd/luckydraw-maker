@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Bell, Pin } from 'lucide-react';
+import { Bell, Pin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -15,11 +15,11 @@ export default function AnnouncementsListClient({ announcements }: { announcemen
 
   return (
     <div className="relative z-10 max-w-2xl mx-auto px-6 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" onClick={() => router.push('/')}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
+      <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl text-gum-black">공지사항</h1>
+        <Button variant="secondary" onClick={() => router.push('/')}>
+          럭드메이커로 가기
+        </Button>
       </div>
 
       {announcements.length === 0 ? (
