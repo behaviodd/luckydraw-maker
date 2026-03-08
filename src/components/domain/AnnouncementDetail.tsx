@@ -4,13 +4,14 @@ import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { Pin, X } from 'lucide-react';
+import { Pin, X, Share2 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import * as Dialog from '@radix-ui/react-dialog';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useIsAdmin } from '@/contexts/AdminContext';
+import { useUIStore } from '@/stores/uiStore';
 import { cn } from '@/lib/utils';
 import type { AnnouncementWithReadStatus } from '@/types';
 
@@ -29,6 +30,20 @@ function AnnouncementContent({ announcement, onClose, showClose, isAdmin }: {
   showClose: boolean;
   isAdmin: boolean;
 }) {
+  const addToast = useUIStore((s) => s.addToast);
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/announcements/${announcement.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: announcement.title, url });
+        return;
+      } catch { /* fallback to clipboard */ }
+    }
+    await navigator.clipboard.writeText(url);
+    addToast({ type: 'success', message: '링크가 복사되었습니다!' });
+  };
+
   return (
     <div className="flex flex-col max-h-[80vh]">
       {/* Accent bar — 사용자 페이지에서만 표시 */}
@@ -49,11 +64,16 @@ function AnnouncementContent({ announcement, onClose, showClose, isAdmin }: {
               </Badge>
             )}
           </div>
-          {showClose && (
-            <Button variant="ghost" onClick={onClose} className="text-text-secondary !p-2">
-              <X className="w-4 h-4" />
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" onClick={handleShare} className="text-text-secondary !p-2">
+              <Share2 className="w-4 h-4" />
             </Button>
-          )}
+            {showClose && (
+              <Button variant="ghost" onClick={onClose} className="text-text-secondary !p-2">
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
         <h3 className={cn(
           'text-2xl mb-1',
