@@ -14,7 +14,6 @@ import { useUIStore } from '@/stores/uiStore';
 import { cn } from '@/lib/utils';
 
 const feedbackSchema = z.object({
-  senderEmail: z.string().email('올바른 이메일을 입력해주세요'),
   subject: z.string().min(1, '제목을 입력해주세요').max(100),
   message: z.string().min(10, '내용을 10자 이상 입력해주세요').max(2000),
   category: z.enum(['bug', 'feature', 'general', 'other']),
@@ -46,7 +45,6 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   } = useForm<FeedbackFormInput>({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
-      senderEmail: user?.email ?? '',
       subject: '',
       message: '',
       category: 'general',
@@ -87,7 +85,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
     // 닫힌 후 상태 리셋
     setTimeout(() => {
       setSent(false);
-      reset({ senderEmail: user?.email ?? '', subject: '', message: '', category: 'general' });
+      reset({ subject: '', message: '', category: 'general' });
     }, 200);
   };
 
@@ -182,11 +180,12 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
                         </div>
                       </div>
 
-                      {/* 답장 이메일 */}
+                      {/* 답장 이메일 (서버에서 인증 이메일 사용, 수정 불가) */}
                       <div>
                         <label className="text-sm text-text-secondary mb-1 block font-bold">답장 받을 이메일</label>
-                        <input {...register('senderEmail')} placeholder="email@example.com" className="w-full" />
-                        {errors.senderEmail && <p className="text-xs text-gum-coral mt-1">{errors.senderEmail.message}</p>}
+                        <div className="w-full px-3 py-2 text-sm text-text-secondary bg-bg-subtle border border-border rounded-lg opacity-60">
+                          {user?.email ?? '(로그인 이메일)'}
+                        </div>
                       </div>
                     </div>
 

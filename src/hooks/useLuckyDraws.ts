@@ -59,7 +59,9 @@ export function useLuckyDraws(userId?: string) {
   }, [supabase, addToast, userId]);
 
   useEffect(() => {
-    fetchDraws();
+    queueMicrotask(() => {
+      void fetchDraws();
+    });
   }, [fetchDraws]);
 
   const deleteDraw = async (id: string) => {
@@ -115,8 +117,10 @@ export function useLuckyDraw(id: string, requireOwnership = false, enableRealtim
   }, [id, supabase, requireOwnership]);
 
   // Supabase Realtime: draw_items 재고 변경 실시간 구독
+  const hasDraw = draw !== null;
+
   useEffect(() => {
-    if (!enableRealtime || !draw) return;
+    if (!enableRealtime || !hasDraw) return;
 
     const channel = supabase
       .channel(`draw-items-${id}`)
@@ -166,7 +170,7 @@ export function useLuckyDraw(id: string, requireOwnership = false, enableRealtim
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [enableRealtime, !!draw, id, supabase]);
+  }, [enableRealtime, hasDraw, id, supabase]);
 
   return { draw, setDraw, loading };
 }

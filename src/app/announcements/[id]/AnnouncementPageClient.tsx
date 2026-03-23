@@ -9,14 +9,12 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useUIStore } from '@/stores/uiStore';
-import { useThemeStore } from '@/stores/themeStore';
 import { cn } from '@/lib/utils';
 import type { Announcement } from '@/types';
 
 export default function AnnouncementPageClient({ announcement }: { announcement: Announcement }) {
   const router = useRouter();
   const addToast = useUIStore((s) => s.addToast);
-  const isCottonCandy = useThemeStore((s) => s.currentTheme) === 'cotton-candy';
 
   const handleShare = async () => {
     await navigator.clipboard.writeText(window.location.href);
@@ -56,7 +54,7 @@ export default function AnnouncementPageClient({ announcement }: { announcement:
         </div>
 
         <div className="px-6 py-6">
-          <div className={cn(
+          <div className={[
             'prose prose-sm max-w-none font-body',
             'prose-headings:font-body prose-headings:font-bold prose-headings:text-gum-black',
             'prose-h1:text-xl prose-h2:text-lg prose-h3:text-base',
@@ -68,11 +66,17 @@ export default function AnnouncementPageClient({ announcement }: { announcement:
             'prose-ul:list-disc prose-ul:pl-5',
             'prose-ol:list-decimal prose-ol:pl-5',
             'prose-li:text-text-primary prose-li:mb-1',
-            isCottonCandy
-              ? 'prose-img:rounded-lg prose-img:border prose-img:border-[rgba(100,200,176,0.2)]'
-              : 'prose-img:border-3 prose-img:border-gum-black prose-img:shadow-brutal-sm',
-          )}>
-            <Markdown>{announcement.content}</Markdown>
+            'prose-img:border-3 prose-img:border-gum-black prose-img:shadow-brutal-sm',
+          ].join(' ')}>
+            <Markdown
+              skipHtml
+              allowedElements={[
+                'h1','h2','h3','h4','h5','h6','p','ul','ol','li','a','strong','em',
+                'code','pre','blockquote','img','hr','br','table','thead','tbody','tr','th','td',
+              ]}
+            >
+              {announcement.content}
+            </Markdown>
           </div>
         </div>
       </GlassCard>

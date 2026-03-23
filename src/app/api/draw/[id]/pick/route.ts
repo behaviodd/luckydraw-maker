@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
-import { checkRateLimit } from '@/lib/rateLimit';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -26,10 +26,7 @@ export async function POST(
   } catch { /* body 없으면 기본값 */ }
 
   // Rate Limit: IP + 드로우별 분당 30회 (한번에 뽑기 고려)
-  const forwarded = request.headers.get('x-forwarded-for');
-  const ip = forwarded
-    ? forwarded.split(',')[0].trim()
-    : request.headers.get('x-real-ip') ?? 'unknown';
+  const ip = getClientIp(request);
   const { allowed } = checkRateLimit(`draw-pick:${id}:${ip}`, 30, 60_000);
   if (!allowed) {
     return NextResponse.json(
@@ -81,9 +78,16 @@ export async function POST(
       return NextResponse.json({ success: false, exhausted: true });
     }
 
-    const { data: rpcResult } = await supabase.rpc('decrement_item_quantity', {
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('decrement_item_quantity', {
       p_item_id: winner.id,
+      p_item_name: winner.name,
+      p_item_image: winner.image_url ?? null,
     });
+
+    if (rpcError) {
+      console.error('[draw/pick] RPC error:', rpcError.message);
+      return NextResponse.json({ success: false, error: 'internal_error' }, { status: 500 });
+    }
 
     if (!rpcResult?.success) {
       if (rpcResult?.error === 'draw_not_active') {
@@ -91,19 +95,6 @@ export async function POST(
       }
       return NextResponse.json({ success: false, error: 'item_exhausted_retry' });
     }
-
-    // 당첨 내역 저장 (실패해도 뽑기 결과에 영향 없음)
-    supabase
-      .from('draw_results')
-      .insert({
-        draw_id: id,
-        item_id: winner.id,
-        item_name: winner.name,
-        item_image: winner.image_url ?? null,
-      })
-      .then(({ error }) => {
-        if (error) console.error('[draw_results] insert failed:', error.message);
-      });
 
     return NextResponse.json({
       success: true,
@@ -123,9 +114,16 @@ export async function POST(
     const winner = pickWinner();
     if (!winner) break; // 재고 소진
 
-    const { data: rpcResult } = await supabase.rpc('decrement_item_quantity', {
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('decrement_item_quantity', {
       p_item_id: winner.id,
+      p_item_name: winner.name,
+      p_item_image: winner.image_url ?? null,
     });
+
+    if (rpcError) {
+      console.error('[draw/pick] RPC error in bulk:', rpcError.message);
+      break;
+    }
 
     if (!rpcResult?.success) {
       if (rpcResult?.error === 'draw_not_active') {
@@ -151,21 +149,7 @@ export async function POST(
     return NextResponse.json({ success: false, exhausted: true });
   }
 
-  // 복수 당첨 내역 일괄 저장 (fire-and-forget)
-  supabase
-    .from('draw_results')
-    .insert(
-      results.map((r) => ({
-        draw_id: id,
-        item_id: r.id,
-        item_name: r.name,
-        item_image: r.imageUrl ?? null,
-        tickets_used: 1,
-      }))
-    )
-    .then(({ error }) => {
-      if (error) console.error('[draw_results] bulk insert failed:', error.message);
-    });
+  // 당첨 내역은 RPC 내부에서 기록됨 (draw_results INSERT는 SECURITY DEFINER RPC 안에서 처리)
 
   return NextResponse.json({
     success: true,

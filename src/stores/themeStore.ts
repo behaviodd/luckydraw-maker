@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type ThemeId = 'dark-glass' | 'retro-pc' | 'cotton-candy';
+export type ThemeId = 'dark-glass' | 'retro-pc';
 
 export interface ThemeOption {
   id: ThemeId;
@@ -22,12 +22,6 @@ export const THEME_OPTIONS: ThemeOption[] = [
     label: 'PC통신',
     description: '하이텔 BBS 스타일',
     preview: '#000080',
-  },
-  {
-    id: 'cotton-candy',
-    label: '코튼캔디 소녀',
-    description: '몽글몽글 파스텔 감성',
-    preview: '#FF6FA8',
   },
 ];
 

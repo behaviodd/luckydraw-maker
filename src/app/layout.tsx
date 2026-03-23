@@ -1,10 +1,40 @@
-export const dynamic = 'force-dynamic';
-
 import type { Metadata } from 'next';
+import { Bagel_Fat_One, Gothic_A1, DM_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import { BackgroundEffect } from '@/components/ui/BackgroundEffect';
 import { ToastContainer } from '@/components/ui/Toast';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import './globals.css';
+
+const bagelFatOne = Bagel_Fat_One({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--nf-display',
+  display: 'swap',
+});
+
+const gothicA1 = Gothic_A1({
+  weight: ['400', '500', '600', '700', '800'],
+  subsets: ['latin'],
+  variable: '--nf-body',
+  display: 'swap',
+});
+
+const dmMono = DM_Mono({
+  weight: ['400', '500'],
+  subsets: ['latin'],
+  variable: '--nf-mono',
+  display: 'swap',
+});
+
+const dungGeunMo = localFont({
+  src: [
+    { path: '../../public/fonts/DungGeunMo.woff2', style: 'normal' },
+    { path: '../../public/fonts/DungGeunMo.woff', style: 'normal' },
+  ],
+  variable: '--nf-retro',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: '럭키드로우메이커 | Luckydraw Maker',
@@ -17,18 +47,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" data-theme="dark-glass" suppressHydrationWarning>
+    <html lang="ko" data-theme="dark-glass" suppressHydrationWarning
+      className={`${bagelFatOne.variable} ${gothicA1.variable} ${dmMono.variable} ${dungGeunMo.variable}`}>
+
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Gothic+A1:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){try{var d=JSON.parse(localStorage.getItem('luckydraw-theme')||'{}');
           var t=d.state&&d.state.currentTheme;
-          if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+          var v=['dark-glass','retro-pc'];
+          if(t&&v.indexOf(t)!==-1)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
         `}} />
       </head>
       <body className="min-h-screen bg-bg-main font-body text-text-primary antialiased">

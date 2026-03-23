@@ -36,7 +36,9 @@ export function useAdminUsers() {
   }, [supabase, addToast]);
 
   useEffect(() => {
-    fetchAll();
+    queueMicrotask(() => {
+      void fetchAll();
+    });
   }, [fetchAll]);
 
   const toggleAdmin = useCallback(

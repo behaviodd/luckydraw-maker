@@ -52,7 +52,9 @@ export default function AdminClient() {
   }, [supabase, addToast]);
 
   useEffect(() => {
-    fetchAll();
+    queueMicrotask(() => {
+      void fetchAll();
+    });
   }, [fetchAll]);
 
   const handleTogglePublish = async (id: string, current: boolean) => {

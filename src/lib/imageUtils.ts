@@ -50,7 +50,8 @@ export async function compressAndUpload(
     if (error.message?.toLowerCase().includes('not found') || error.message?.toLowerCase().includes('bucket')) {
       throw new BucketNotFoundError();
     }
-    throw error;
+    console.error('[ImageUpload] Upload error:', error);
+    throw new Error('파일 업로드에 실패했습니다.');
   }
 
   const { data } = supabase.storage

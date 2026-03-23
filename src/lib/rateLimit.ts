@@ -1,7 +1,16 @@
 // 주의: 서버리스 환경에서 재시작 시 초기화됨
 // TODO: 프로덕션에서는 Upstash Redis 또는 Supabase 테이블로 교체
 
+import type { NextRequest } from 'next/server';
+
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+/** 클라이언트 IP 추출 (x-real-ip 우선, x-forwarded-for 폴백) */
+export function getClientIp(request: NextRequest): string {
+  return request.headers.get('x-real-ip')
+    ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? 'unknown';
+}
 
 export function checkRateLimit(
   key: string,

@@ -43,7 +43,9 @@ export function useAdminDraws() {
   }, [supabase, addToast]);
 
   useEffect(() => {
-    fetchAll();
+    queueMicrotask(() => {
+      void fetchAll();
+    });
   }, [fetchAll]);
 
   const toggleActive = useCallback(

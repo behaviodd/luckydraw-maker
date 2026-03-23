@@ -45,7 +45,9 @@ export function useAdminFeedbacks() {
   }, [supabase, addToast, setUnreadCount]);
 
   useEffect(() => {
-    fetchAll();
+    queueMicrotask(() => {
+      void fetchAll();
+    });
   }, [fetchAll]);
 
   const unreadCount = feedbacks.filter((f) => !f.isRead).length;
@@ -75,5 +77,30 @@ export function useAdminFeedbacks() {
     [supabase, decrementUnread, setUnreadCount],
   );
 
-  return { feedbacks, loading, unreadCount, markAsRead, refetch: fetchAll };
+  const deleteFeedback = useCallback(
+    async (id: string) => {
+      const target = feedbacks.find((f) => f.id === id);
+      // 낙관적 삭제
+      setFeedbacks((prev) => prev.filter((f) => f.id !== id));
+      if (target && !target.isRead) {
+        decrementUnread();
+      }
+
+      const { error } = await supabase
+        .from('feedbacks')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        // 롤백
+        addToast({ type: 'error', message: '삭제에 실패했어요' });
+        void fetchAll();
+      } else {
+        addToast({ type: 'success', message: '피드백이 삭제되었어요' });
+      }
+    },
+    [supabase, feedbacks, addToast, decrementUnread, fetchAll],
+  );
+
+  return { feedbacks, loading, unreadCount, markAsRead, deleteFeedback, refetch: fetchAll };
 }

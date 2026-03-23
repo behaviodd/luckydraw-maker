@@ -62,7 +62,9 @@ export function useAdminDrawDetail(drawId: string) {
   }, [supabase, addToast, drawId]);
 
   useEffect(() => {
-    fetch();
+    queueMicrotask(() => {
+      void fetch();
+    });
   }, [fetch]);
 
   return { detail, loading };

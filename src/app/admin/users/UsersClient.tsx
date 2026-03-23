@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Switch from '@radix-ui/react-switch';
+import Image from 'next/image';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -127,7 +128,7 @@ export default function UsersClient() {
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gum-pink/10 flex items-center justify-center shrink-0 overflow-hidden">
                         {user.avatarUrl ? (
-                          <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          <Image src={user.avatarUrl} alt="" width={32} height={32} className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-xs font-bold text-gum-pink">
                             {(user.displayName ?? user.email)[0].toUpperCase()}

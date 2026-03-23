@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Mail, Circle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageSquare, Mail, Circle, CheckCircle2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import * as Dialog from '@radix-ui/react-dialog';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useAdminFeedbacks } from '@/hooks/useAdminFeedbacks';
@@ -27,10 +28,11 @@ const categoryBadge: Record<FeedbackCategory, { label: string; className: string
 };
 
 export default function FeedbacksClient() {
-  const { feedbacks, loading, markAsRead } = useAdminFeedbacks();
+  const { feedbacks, loading, markAsRead, deleteFeedback } = useAdminFeedbacks();
   const [category, setCategory] = useState<FeedbackCategory | 'all'>('all');
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const filtered = feedbacks.filter((f) => {
     if (category !== 'all' && f.category !== category) return false;
@@ -114,6 +116,7 @@ export default function FeedbacksClient() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider w-44">보낸 사람</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-28">시간</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-16"></th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-muted uppercase tracking-wider w-12"></th>
               </tr>
             </thead>
             <tbody>
@@ -185,6 +188,15 @@ export default function FeedbacksClient() {
                         {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                       </button>
                     </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(f.id); }}
+                        className="p-1 text-text-muted hover:text-gum-coral transition-colors cursor-pointer"
+                        title="삭제"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -192,6 +204,38 @@ export default function FeedbacksClient() {
           </table>
         </motion.div>
       )}
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog.Root open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-bg-card border border-border rounded-xl p-6 w-[360px] z-50 shadow-xl">
+            <Dialog.Title className="text-lg font-bold text-text-primary mb-2">피드백 삭제</Dialog.Title>
+            <Dialog.Description className="text-sm text-text-secondary mb-6">
+              이 피드백을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.
+            </Dialog.Description>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 text-sm font-medium text-text-secondary bg-bg-subtle border border-border rounded-lg hover:bg-bg-card transition-colors cursor-pointer"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  if (deleteTarget) {
+                    deleteFeedback(deleteTarget);
+                    setDeleteTarget(null);
+                    if (expandedId === deleteTarget) setExpandedId(null);
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-gum-coral border border-gum-coral rounded-lg hover:bg-gum-coral/90 transition-colors cursor-pointer"
+              >
+                삭제
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </main>
   );
 }

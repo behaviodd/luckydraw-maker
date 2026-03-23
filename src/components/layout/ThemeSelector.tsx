@@ -39,9 +39,7 @@ export function ThemeSelector({ open, onSelect }: ThemeSelectorProps) {
                   <div
                     className="w-8 h-8 border-2 border-gum-black shrink-0 rounded-sm"
                     style={{
-                      background: opt.id === 'cotton-candy'
-                        ? 'linear-gradient(135deg, #FFDDE1, #FF6FA8, #C9A8E2)'
-                        : opt.preview,
+                      background: opt.preview,
                     }}
                   />
                   <div className="min-w-0 flex-1">

@@ -60,7 +60,15 @@ export function useDrawResults({ drawId, enabled = true }: UseDrawResultsOptions
   }, [supabase, drawId, enabled]);
 
   useEffect(() => {
-    if (enabled) fetchResults();
+    if (!enabled) {
+      queueMicrotask(() => {
+        setIsLoading(false);
+      });
+      return;
+    }
+    queueMicrotask(() => {
+      void fetchResults();
+    });
   }, [fetchResults, enabled]);
 
   // Realtime: 새 당첨 INSERT 감지

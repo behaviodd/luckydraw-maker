@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Play, Share2 } from 'lucide-react';
+import Image from 'next/image';
 import { useLuckyDraw } from '@/hooks/useLuckyDraws';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
@@ -54,7 +55,7 @@ export default function DrawInfoClient({ id }: { id: string }) {
                 <div className={`w-2 h-10 ${COLORS[index % COLORS.length]}`} />
                 {item.imageUrl ? (
                   <div className="w-10 h-10 border-2 border-gum-black overflow-hidden shadow-brutal-sm">
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                    <Image src={item.imageUrl} alt={item.name} width={40} height={40} className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <div className="w-10 h-10 border-2 border-gum-black bg-bg-card flex items-center justify-center shadow-brutal-sm">

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Menu, LogOut, Palette, ShieldCheck } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { createClient } from '@/lib/supabase/client';
@@ -95,9 +96,11 @@ export function HamburgerMenu() {
             {/* User info */}
             <div className="flex items-center gap-3 px-4 py-3 border-b-2 border-gum-black/10">
               {user.user_metadata?.avatar_url ? (
-                <img
+                <Image
                   src={user.user_metadata.avatar_url}
                   alt="Avatar"
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full border-2 border-gum-black shadow-brutal-sm shrink-0"
                 />
               ) : (

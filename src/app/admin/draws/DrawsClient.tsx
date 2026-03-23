@@ -7,6 +7,7 @@ import { Gift, Search, Trash2, Power, PowerOff, ExternalLink } from 'lucide-reac
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import * as Dialog from '@radix-ui/react-dialog';
+import Image from 'next/image';
 import { useAdminDraws } from '@/hooks/useAdminDraws';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -129,7 +130,7 @@ export default function DrawsClient() {
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-gum-pink/10 flex items-center justify-center shrink-0 overflow-hidden">
                         {draw.ownerAvatarUrl ? (
-                          <img src={draw.ownerAvatarUrl} alt="" className="w-full h-full object-cover" />
+                          <Image src={draw.ownerAvatarUrl} alt="" width={24} height={24} className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-[9px] font-bold text-gum-pink">
                             {(draw.ownerDisplayName ?? draw.ownerEmail)[0].toUpperCase()}

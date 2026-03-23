@@ -11,15 +11,17 @@ export function useIsAdmin() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) {
-      setIsAdmin(false);
-      setIsLoading(false);
-      return;
-    }
-
     let cancelled = false;
 
     const check = async () => {
+      if (!user) {
+        if (!cancelled) {
+          setIsAdmin(false);
+          setIsLoading(false);
+        }
+        return;
+      }
+
       setIsLoading(true);
       const { data } = await supabase.rpc('is_admin');
       if (!cancelled) {
@@ -28,7 +30,9 @@ export function useIsAdmin() {
       }
     };
 
-    check();
+    queueMicrotask(() => {
+      void check();
+    });
     return () => { cancelled = true; };
   }, [supabase, user]);
 

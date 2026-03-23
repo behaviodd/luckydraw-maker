@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -33,35 +34,55 @@ const CONFETTI_COLORS = [
   'var(--color-gum-orange)',
 ];
 
+function seededValue(seed: number) {
+  const value = Math.sin(seed * 24691.357) * 10000;
+  return value - Math.floor(value);
+}
+
+function createConfettiStyle(seed: number, color: string) {
+  return {
+    width: 6 + seededValue(seed + 1) * 10,
+    height: 6 + seededValue(seed + 2) * 10,
+    backgroundColor: color,
+    border: '2px solid var(--color-border)',
+    left: `${5 + seededValue(seed + 3) * 90}%`,
+    top: '-20px',
+  };
+}
+
+function createConfettiAnimation(seed: number) {
+  return {
+    animate: {
+      y: [0, 850],
+      rotate: [0, 360 * (seededValue(seed + 4) > 0.5 ? 1 : -1)],
+      opacity: [1, 1, 0],
+    },
+    transition: {
+      duration: 2 + seededValue(seed + 5) * 2,
+      delay: seededValue(seed + 6) * 0.8,
+      ease: 'easeIn' as const,
+    },
+  };
+}
+
 /* ═══ dark-glass 전용 서브 컴포넌트 ═══ */
 
 function ConfettiPieces() {
   return (
     <>
-      {Array.from({ length: 30 }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute"
-          style={{
-            width: 6 + Math.random() * 10,
-            height: 6 + Math.random() * 10,
-            backgroundColor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-            border: '2px solid var(--color-border)',
-            left: `${5 + Math.random() * 90}%`,
-            top: '-20px',
-          }}
-          animate={{
-            y: [0, (typeof window !== 'undefined' ? window.innerHeight : 800) + 50],
-            rotate: [0, 360 * (Math.random() > 0.5 ? 1 : -1)],
-            opacity: [1, 1, 0],
-          }}
-          transition={{
-            duration: 2 + Math.random() * 2,
-            delay: Math.random() * 0.8,
-            ease: 'easeIn',
-          }}
-        />
-      ))}
+      {Array.from({ length: 30 }).map((_, i) => {
+        const seed = i * 10;
+        const { animate, transition } = createConfettiAnimation(seed);
+        return (
+          <motion.div
+            key={i}
+            className="absolute"
+            style={createConfettiStyle(seed, CONFETTI_COLORS[i % CONFETTI_COLORS.length])}
+            animate={animate}
+            transition={transition}
+          />
+        );
+      })}
     </>
   );
 }
@@ -107,161 +128,6 @@ function ItemPreview({ draw }: { draw: LuckyDraw }) {
         </motion.div>
       ))}
     </div>
-  );
-}
-
-/* ═══ cotton-candy 전용 서브 컴포넌트 ═══ */
-
-function CandyItemPreview({ draw }: { draw: LuckyDraw }) {
-  const items = draw.items ?? [];
-  if (items.length === 0) return null;
-  return (
-    <div className="flex flex-wrap justify-center gap-2 max-w-md">
-      {items.map((item, i) => (
-        <motion.div
-          key={item.id}
-          className="px-3 py-1.5 rounded-full border border-[rgba(100,200,176,0.2)] bg-bg-card/80 backdrop-blur-sm text-sm font-body text-text-primary flex items-center gap-1.5"
-          style={{ animation: `bubble-float ${3 + Math.random() * 2}s ease-in-out ${i * 0.3}s infinite` }}
-        >
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt={item.name} className="w-5 h-5 rounded-full object-cover" />
-          ) : (
-            <span className="text-accent-primary font-display text-xs">{item.name.charAt(0)}</span>
-          )}
-          <span>{item.name}</span>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
-function CandyBurst() {
-  const emojis = ['💖', '✨', '⭐', '💗', '🌸', '💫', '💖', '✨', '⭐', '💗', '🌸', '💫'];
-  return (
-    <div className="relative w-48 h-48">
-      {/* 방사형 글로우 펄스 */}
-      <motion.div
-        className="absolute inset-0 rounded-full"
-        style={{ background: 'radial-gradient(circle, rgba(125,212,190,0.3) 0%, transparent 70%)' }}
-        animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0.2, 0.6] }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      {/* 이모지 폭발 */}
-      {emojis.map((e, i) => {
-        const angle = (i / emojis.length) * Math.PI * 2;
-        const tx = Math.cos(angle) * 90;
-        const ty = Math.sin(angle) * 90;
-        return (
-          <motion.span
-            key={i}
-            className="absolute text-xl"
-            style={{
-              left: '50%',
-              top: '50%',
-              marginLeft: -10,
-              marginTop: -10,
-            }}
-            animate={{
-              x: [0, tx, tx],
-              y: [0, ty, ty],
-              scale: [0, 1.5, 0],
-              opacity: [0, 1, 0],
-            }}
-            transition={{
-              duration: 1.5,
-              delay: i * 0.1,
-              repeat: Infinity,
-              ease: 'easeOut',
-            }}
-          >
-            {e}
-          </motion.span>
-        );
-      })}
-    </div>
-  );
-}
-
-function CandyConfetti() {
-  const emojis = ['💖', '✨', '🌸', '💗', '⭐', '💫', '🎀', '💖', '✨', '🌸',
-    '💗', '⭐', '💫', '🎀', '💖', '✨', '🌸', '💗', '⭐', '💫',
-    '🎀', '💖', '✨', '🌸', '💗', '⭐', '💫', '🎀', '💖', '✨'];
-  return (
-    <>
-      {emojis.map((emoji, i) => {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 150 + Math.random() * 250;
-        const tx = Math.cos(angle) * distance;
-        const ty = Math.sin(angle) * distance - 60;
-        return (
-          <motion.span
-            key={i}
-            className="absolute pointer-events-none"
-            style={{
-              fontSize: 14 + Math.random() * 10,
-              left: '50%',
-              top: '40%',
-              marginLeft: -10,
-              marginTop: -10,
-            }}
-            initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
-            animate={{
-              x: tx,
-              y: ty + Math.random() * 100,
-              scale: [0, 1.3, 0.8],
-              rotate: 360 * (Math.random() > 0.5 ? 1 : -1),
-              opacity: [1, 1, 0],
-            }}
-            transition={{
-              duration: 1.5 + Math.random() * 1,
-              delay: Math.random() * 0.3,
-              ease: 'easeOut',
-            }}
-          >
-            {emoji}
-          </motion.span>
-        );
-      })}
-    </>
-  );
-}
-
-function HeartPopDecorations() {
-  const positions = [
-    { top: '-16px', left: '50%', ml: -8 },    // 상
-    { bottom: '-16px', left: '50%', ml: -8 },  // 하
-    { top: '50%', left: '-16px', mt: -8 },     // 좌
-    { top: '50%', right: '-16px', mt: -8 },    // 우
-    { top: '-8px', left: '-8px' },              // 좌상
-    { top: '-8px', right: '-8px' },             // 우상
-  ];
-  const colors = ['var(--color-accent-primary)', 'var(--color-accent-secondary)'];
-  return (
-    <>
-      {positions.map((pos, i) => (
-        <motion.span
-          key={i}
-          className="absolute text-lg pointer-events-none"
-          style={{
-            ...pos,
-            marginLeft: 'ml' in pos ? pos.ml : undefined,
-            marginTop: 'mt' in pos ? pos.mt : undefined,
-            color: colors[i % 2],
-          }}
-          initial={{ opacity: 0, scale: 0, rotate: -20 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{
-            delay: 0.3 + i * 0.1,
-            duration: 0.5,
-            type: 'spring',
-            stiffness: 300,
-            damping: 15,
-          }}
-        >
-          💖
-        </motion.span>
-      ))}
-    </>
   );
 }
 
@@ -315,7 +181,6 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
   const addToast = useUIStore((s) => s.addToast);
   const currentTheme = useThemeStore((s) => s.currentTheme);
   const isRetro = currentTheme === 'retro-pc';
-  const isCottonCandy = currentTheme === 'cotton-candy';
   const { isDrawing, setIsDrawing, lastResult, setLastResult } = useDrawStore();
   const [exhausted, setExhausted] = useState(false);
   const isOwner = mode === 'owner';
@@ -737,160 +602,6 @@ export function DrawScreen({ draw, mode, onItemDecremented }: DrawScreenProps) {
               </div>
             )}
           </div>
-        </div>
-        {renderTicketPanel()}
-      </div>
-    );
-  }
-
-  /* ── cotton-candy 렌더 ── */
-  if (isCottonCandy) {
-    return (
-      <div className="relative z-10 min-h-screen flex flex-col">
-        <div className="flex-1 flex items-center justify-center relative z-10 p-6">
-          <AnimatePresence mode="wait">
-            {/* ── 상태 A: 대기 ── */}
-            {!isDrawing && !lastResult && !hasBulkResults && (
-              <motion.div key="idle" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                className="flex flex-col items-center gap-8">
-                <div className="text-center">
-                  <motion.h2 className="font-display text-3xl text-text-primary mb-2"
-                    animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
-                    {draw.name}
-                  </motion.h2>
-                  {mode === 'owner' && (
-                    <p className="text-text-secondary text-sm">
-                      {itemCount}개 아이템 · {draw.probabilityMode === 'equal' ? '균등확률' : '차등확률'}
-                    </p>
-                  )}
-                </div>
-                {isAllExhausted ? (
-                  <GlassCard className="flex flex-col items-center gap-4 p-8">
-                    <p className="text-4xl">🎀</p>
-                    <p className="font-display text-xl text-text-primary">모든 아이템이 소진되었어요!</p>
-                    <p className="text-sm text-text-secondary">더 이상 뽑을 수 있는 아이템이 없습니다.</p>
-                  </GlassCard>
-                ) : (
-                  <>
-                    {isOwner && <CandyItemPreview draw={draw} />}
-                    <Button variant="draw" disabled={drawDisabled} isLoading={isDrawing} onClick={handleDraw}>{draw.drawButtonLabel}</Button>
-                    {renderBulkDrawButton()}
-                    {renderTicketStatus()}
-                  </>
-                )}
-              </motion.div>
-            )}
-
-            {/* ── 상태 B: 추첨 중 ── */}
-            {isDrawing && (
-              <motion.div key="drawing" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                className="flex flex-col items-center gap-8">
-                <CandyBurst />
-                <motion.p
-                  className="font-display text-xl"
-                  style={{ color: 'var(--color-accent-primary)' }}
-                  animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 1.2, repeat: Infinity }}
-                >
-                  두근두근... 💗
-                </motion.p>
-              </motion.div>
-            )}
-
-            {/* ── 상태 C: 결과 ── */}
-            {!isDrawing && lastResult && (
-              <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex flex-col items-center gap-8 relative w-full">
-                <CandyConfetti />
-                {/* 타이틀 */}
-                <motion.div initial={{ scale: 0, rotate: -5 }} animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: 'spring', stiffness: 180, damping: 14 }} className="text-center">
-                  <p className="font-display text-4xl mb-2" style={{ color: 'var(--color-accent-primary)' }}>당첨! 🎉</p>
-                </motion.div>
-
-                {/* 결과 카드 + heart-pop 데코 */}
-                <motion.div
-                  className="relative"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 180, damping: 16, delay: 0.2 }}
-                >
-                  <GlassCard glow="rose" className="flex flex-col items-center gap-5 p-8 min-w-[240px]">
-                    {lastResult.item.imageUrl ? (
-                      <div
-                        className="w-36 h-36 rounded-full overflow-hidden"
-                        style={{ border: '1px solid rgba(100, 200, 176, 0.3)' }}
-                      >
-                        <img src={lastResult.item.imageUrl} alt={lastResult.item.name} className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div
-                        className="w-36 h-36 rounded-full flex items-center justify-center bg-accent-tertiary/30"
-                        style={{ border: '1px solid rgba(100, 200, 176, 0.3)' }}
-                      >
-                        <span className="text-6xl font-display" style={{ color: 'var(--color-accent-primary)' }}>
-                          {lastResult.item.name.charAt(0)}
-                        </span>
-                      </div>
-                    )}
-                    <p className="font-display text-2xl text-center" style={{ color: 'var(--color-accent-primary)' }}>
-                      {lastResult.item.name}
-                    </p>
-                  </GlassCard>
-                </motion.div>
-
-                {/* 다시 뽑기 버튼 */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-                  <Button variant="primary" onClick={handleReset}>
-                    <RotateCcw className="w-4 h-4" /> 다시 뽑기
-                  </Button>
-                </motion.div>
-              </motion.div>
-            )}
-
-            {/* ── 상태 D: 한번에 뽑기 결과 ── */}
-            {!isDrawing && hasBulkResults && (
-              <motion.div key="bulk" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex flex-col items-center gap-6 relative w-full max-w-lg">
-                <CandyConfetti />
-                <motion.p initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 180, damping: 14 }}
-                  className="font-display text-3xl" style={{ color: 'var(--color-accent-primary)' }}>
-                  {bulkResults.length}개 당첨!
-                </motion.p>
-                <div className="w-full flex flex-wrap justify-center gap-3 max-h-[55vh] overflow-y-auto">
-                  {bulkResults.map((result, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.7 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.08, type: 'spring', stiffness: 200, damping: 15 }}
-                    >
-                      <GlassCard className="flex flex-col items-center justify-center gap-2 !p-3 h-28 w-28">
-                        {result.imageUrl ? (
-                          <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0"
-                            style={{ border: '1px solid rgba(100,200,176,0.3)' }}>
-                            <img src={result.imageUrl} alt={result.name} className="w-full h-full object-cover" />
-                          </div>
-                        ) : (
-                          <div className="w-14 h-14 rounded-full bg-accent-tertiary/30 flex items-center justify-center flex-shrink-0"
-                            style={{ border: '1px solid rgba(100,200,176,0.3)' }}>
-                            <span className="text-2xl font-display" style={{ color: 'var(--color-accent-primary)' }}>{result.name.charAt(0)}</span>
-                          </div>
-                        )}
-                        <span className="font-display text-xs text-text-primary text-center leading-tight line-clamp-2 w-full">{result.name}</span>
-                      </GlassCard>
-                    </motion.div>
-                  ))}
-                </div>
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                  <Button variant="primary" onClick={handleReset}>
-                    <RotateCcw className="w-4 h-4" /> 다시 뽑기
-                  </Button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
         {renderTicketPanel()}
       </div>

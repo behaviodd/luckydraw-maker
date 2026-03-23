@@ -211,3 +211,13 @@ CREATE POLICY "feedbacks_admin_update" ON feedbacks
   FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM admins WHERE user_id = auth.uid()))
   WITH CHECK (EXISTS (SELECT 1 FROM admins WHERE user_id = auth.uid()));
+
+-- 관리자는 피드백 삭제 가능
+CREATE POLICY "feedbacks_admin_delete" ON feedbacks
+  FOR DELETE TO authenticated
+  USING (EXISTS (SELECT 1 FROM admins WHERE user_id = auth.uid()));
+
+-- 사용자는 본인 피드백 조회 가능
+CREATE POLICY "feedbacks_self_read" ON feedbacks
+  FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);

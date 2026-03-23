@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Play, Pencil, Share2, Pause, PlayCircle, Package, Trophy } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import Image from 'next/image';
 import { useLuckyDraw } from '@/hooks/useLuckyDraws';
 import { useDrawResults } from '@/hooks/useDrawResults';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -14,7 +15,6 @@ import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { createClient } from '@/lib/supabase/client';
 import { useUIStore } from '@/stores/uiStore';
-import { useThemeStore } from '@/stores/themeStore';
 import { cn } from '@/lib/utils';
 
 // 재고 수준 판단
@@ -46,7 +46,6 @@ export default function VaultDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { draw, setDraw, loading } = useLuckyDraw(id, true, true); // enableRealtime
   const addToast = useUIStore((s) => s.addToast);
-  const isCottonCandy = useThemeStore((s) => s.currentTheme) === 'cotton-candy';
   const supabase = createClient();
   const [toggling, setToggling] = useState(false);
   const [activeTab, setActiveTab] = useState<'stock' | 'results'>('stock');
@@ -98,9 +97,7 @@ export default function VaultDetailClient({ id }: { id: string }) {
       </div>
 
       {/* ═══ 상단 요약 바 ═══ */}
-      <div className={cn(
-        "grid grid-cols-3 gap-3 mb-6",
-      )}>
+      <div className="grid grid-cols-3 gap-3 mb-6">
         {/* 총 남은 경품 */}
         <GlassCard className="!p-4 text-center">
           <p className="text-xs text-text-secondary mb-1">총 남은 경품</p>
@@ -144,15 +141,10 @@ export default function VaultDetailClient({ id }: { id: string }) {
           onClick={() => setActiveTab('stock')}
           className={cn(
             'flex items-center gap-1.5 px-4 py-2 text-sm font-display transition-all',
-            isCottonCandy
-              ? cn('border rounded-full',
-                  activeTab === 'stock'
-                    ? 'border-accent-primary bg-accent-tertiary/30 text-text-primary'
-                    : 'border-[rgba(100,200,176,0.2)] bg-bg-card text-text-muted hover:border-accent-primary')
-              : cn('border-2',
-                  activeTab === 'stock'
-                    ? 'border-gum-black bg-gum-pink text-white shadow-brutal-sm'
-                    : 'border-gum-black/20 bg-bg-card text-text-muted hover:border-gum-black')
+            cn('border-2',
+                activeTab === 'stock'
+                  ? 'border-gum-black bg-gum-pink text-white shadow-brutal-sm'
+                  : 'border-gum-black/20 bg-bg-card text-text-muted hover:border-gum-black')
           )}
         >
           <Package className="w-4 h-4" /> 재고 현황
@@ -162,15 +154,10 @@ export default function VaultDetailClient({ id }: { id: string }) {
           onClick={() => setActiveTab('results')}
           className={cn(
             'flex items-center gap-1.5 px-4 py-2 text-sm font-display transition-all',
-            isCottonCandy
-              ? cn('border rounded-full',
-                  activeTab === 'results'
-                    ? 'border-accent-primary bg-accent-tertiary/30 text-text-primary'
-                    : 'border-[rgba(100,200,176,0.2)] bg-bg-card text-text-muted hover:border-accent-primary')
-              : cn('border-2',
-                  activeTab === 'results'
-                    ? 'border-gum-black bg-gum-pink text-white shadow-brutal-sm'
-                    : 'border-gum-black/20 bg-bg-card text-text-muted hover:border-gum-black')
+            cn('border-2',
+                activeTab === 'results'
+                  ? 'border-gum-black bg-gum-pink text-white shadow-brutal-sm'
+                  : 'border-gum-black/20 bg-bg-card text-text-muted hover:border-gum-black')
           )}
         >
           <Trophy className="w-4 h-4" /> 당첨 내역
@@ -180,7 +167,7 @@ export default function VaultDetailClient({ id }: { id: string }) {
       {/* ═══ 재고 현황 탭 ═══ */}
       {activeTab === 'stock' && (
       <GlassCard className="mb-6">
-        <h2 className={cn("font-display text-lg mb-4", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>
+        <h2 className="font-display text-lg mb-4 text-gum-pink">
           재고 현황
         </h2>
         <div className="flex flex-col gap-3">
@@ -196,31 +183,19 @@ export default function VaultDetailClient({ id }: { id: string }) {
                 transition={{ delay: index * 0.05 }}
                 className={cn(
                   "p-4 bg-bg-subtle",
-                  isCottonCandy
-                    ? "border border-[rgba(100,200,176,0.15)] rounded-2xl"
-                    : "border-2 border-gum-black shadow-brutal-sm",
+                  "border-2 border-gum-black shadow-brutal-sm",
                   level === 'exhausted' && "opacity-60"
                 )}
               >
                 <div className="flex items-center gap-3 mb-2">
                   {/* 이미지/플레이스홀더 */}
                   {item.imageUrl ? (
-                    <div className={cn(
-                      "w-10 h-10 flex-shrink-0 overflow-hidden",
-                      isCottonCandy
-                        ? "border border-[rgba(100,200,176,0.2)] rounded-xl"
-                        : "border-2 border-gum-black shadow-brutal-sm"
-                    )}>
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                    <div className="w-10 h-10 flex-shrink-0 overflow-hidden border-2 border-gum-black shadow-brutal-sm">
+                      <Image src={item.imageUrl} alt={item.name} width={40} height={40} className="w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div className={cn(
-                      "w-10 h-10 flex-shrink-0 bg-bg-card flex items-center justify-center",
-                      isCottonCandy
-                        ? "border border-[rgba(100,200,176,0.2)] rounded-xl"
-                        : "border-2 border-gum-black shadow-brutal-sm"
-                    )}>
-                      <span className={cn("text-sm font-display", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>
+                    <div className="w-10 h-10 flex-shrink-0 bg-bg-card flex items-center justify-center border-2 border-gum-black shadow-brutal-sm">
+                      <span className="text-sm font-display text-gum-pink">
                         {item.name.charAt(0)}
                       </span>
                     </div>
@@ -244,14 +219,9 @@ export default function VaultDetailClient({ id }: { id: string }) {
                 </div>
 
                 {/* 프로그레스 바 */}
-                <div className={cn(
-                  "w-full h-3 bg-bg-card overflow-hidden",
-                  isCottonCandy
-                    ? "border border-[rgba(100,200,176,0.3)] rounded-full"
-                    : "border-2 border-gum-black"
-                )}>
+                <div className="w-full h-3 bg-bg-card overflow-hidden border-2 border-gum-black">
                   <motion.div
-                    className={cn("h-full", STOCK_BAR_COLORS[level], isCottonCandy && "rounded-full")}
+                    className={cn("h-full", STOCK_BAR_COLORS[level])}
                     initial={{ width: 0 }}
                     animate={{ width: `${percent}%` }}
                     transition={{ delay: index * 0.05 + 0.2, duration: 0.5 }}
@@ -266,7 +236,7 @@ export default function VaultDetailClient({ id }: { id: string }) {
 
       {/* ═══ 당첨 내역 탭 ═══ */}
       {activeTab === 'results' && (
-        <DrawResultsTab drawId={id} isCottonCandy={isCottonCandy} />
+        <DrawResultsTab drawId={id} />
       )}
 
       {/* ═══ 빠른 액션 ═══ */}
@@ -300,7 +270,7 @@ export default function VaultDetailClient({ id }: { id: string }) {
 
 /* ═══ 당첨 내역 서브 컴포넌트 ═══ */
 
-function DrawResultsTab({ drawId, isCottonCandy }: { drawId: string; isCottonCandy: boolean }) {
+function DrawResultsTab({ drawId }: { drawId: string }) {
   const { results, todayCount, isLoading } = useDrawResults({ drawId, enabled: true });
 
   if (isLoading) {
@@ -319,7 +289,7 @@ function DrawResultsTab({ drawId, isCottonCandy }: { drawId: string; isCottonCan
       <GlassCard className="!p-4">
         <div className="flex items-center justify-between">
           <span className="text-sm text-text-secondary font-bold">오늘 총 뽑기</span>
-          <span className={cn("font-display text-xl", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>
+          <span className="font-display text-xl text-gum-pink">
             {todayCount}회
           </span>
         </div>
@@ -327,7 +297,7 @@ function DrawResultsTab({ drawId, isCottonCandy }: { drawId: string; isCottonCan
 
       {/* 당첨 내역 리스트 */}
       <GlassCard>
-        <h2 className={cn("font-display text-lg mb-4", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>
+        <h2 className="font-display text-lg mb-4 text-gum-pink">
           당첨 내역
         </h2>
 
@@ -345,31 +315,16 @@ function DrawResultsTab({ drawId, isCottonCandy }: { drawId: string; isCottonCan
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className={cn(
-                    "flex items-center gap-3 p-3",
-                    isCottonCandy
-                      ? "border border-[rgba(100,200,176,0.15)] rounded-2xl bg-bg-subtle"
-                      : "border-2 border-gum-black/10 bg-bg-subtle"
-                  )}
+                  className="flex items-center gap-3 p-3 border-2 border-gum-black/10 bg-bg-subtle"
                 >
                   {/* 이미지/이니셜 */}
                   {result.itemImage ? (
-                    <div className={cn(
-                      "w-10 h-10 flex-shrink-0 overflow-hidden",
-                      isCottonCandy
-                        ? "border border-[rgba(100,200,176,0.2)] rounded-xl"
-                        : "border-2 border-gum-black shadow-brutal-sm"
-                    )}>
-                      <img src={result.itemImage} alt={result.itemName} className="w-full h-full object-cover" />
+                    <div className="w-10 h-10 flex-shrink-0 overflow-hidden border-2 border-gum-black shadow-brutal-sm">
+                      <Image src={result.itemImage} alt={result.itemName} width={40} height={40} className="w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div className={cn(
-                      "w-10 h-10 flex-shrink-0 bg-bg-card flex items-center justify-center",
-                      isCottonCandy
-                        ? "border border-[rgba(100,200,176,0.2)] rounded-xl"
-                        : "border-2 border-gum-black shadow-brutal-sm"
-                    )}>
-                      <span className={cn("text-sm font-display", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>
+                    <div className="w-10 h-10 flex-shrink-0 bg-bg-card flex items-center justify-center border-2 border-gum-black shadow-brutal-sm">
+                      <span className="text-sm font-display text-gum-pink">
                         {result.itemName.charAt(0)}
                       </span>
                     </div>

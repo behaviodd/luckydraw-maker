@@ -4,7 +4,6 @@ import { createServerClient } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rateLimit';
 
 const feedbackSchema = z.object({
-  senderEmail: z.string().email(),
   subject: z.string().min(1).max(100),
   message: z.string().min(10).max(2000),
   category: z.enum(['bug', 'feature', 'general', 'other']),
@@ -26,12 +25,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
 
-  // Rate limit (IP 기준)
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    ?? request.headers.get('x-real-ip')
-    ?? 'unknown';
-
-  const { allowed } = checkRateLimit(`feedback:${ip}`);
+  // Rate limit (인증 사용자 ID 기준 — IP 스푸핑 방지)
+  const { allowed } = checkRateLimit(`feedback:${user.id}`);
   if (!allowed) {
     return NextResponse.json(
       { error: '잠시 후 다시 시도해주세요.' },
@@ -55,7 +50,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { senderEmail, subject, message, category } = parsed.data;
+  const { subject, message, category } = parsed.data;
+  const senderEmail = user.email ?? '';
 
   // Supabase DB에 피드백 저장
   const { error: dbError } = await supabase.from('feedbacks').insert({

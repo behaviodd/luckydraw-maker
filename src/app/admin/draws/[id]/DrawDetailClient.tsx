@@ -7,6 +7,7 @@ import { ArrowLeft, Gift, Power, PowerOff, Trash2, Package } from 'lucide-react'
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import * as Dialog from '@radix-ui/react-dialog';
+import Image from 'next/image';
 import { useAdminDrawDetail } from '@/hooks/useAdminDrawDetail';
 import { createClient } from '@/lib/supabase/client';
 import { useUIStore } from '@/stores/uiStore';
@@ -104,7 +105,7 @@ export default function DrawDetailClient({ drawId }: { drawId: string }) {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gum-pink/10 flex items-center justify-center shrink-0 overflow-hidden">
                 {owner.avatarUrl ? (
-                  <img src={owner.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  <Image src={owner.avatarUrl} alt="" width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-sm font-bold text-gum-pink">
                     {(owner.displayName ?? owner.email)[0].toUpperCase()}
@@ -208,7 +209,7 @@ export default function DrawDetailClient({ drawId }: { drawId: string }) {
                           <td className="px-4 py-2.5">
                             <div className="w-8 h-8 rounded-lg bg-bg-card border border-border flex items-center justify-center shrink-0 overflow-hidden">
                               {item.imageUrl ? (
-                                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                <Image src={item.imageUrl} alt={item.name} width={32} height={32} className="w-full h-full object-cover" />
                               ) : (
                                 <Gift className="w-3.5 h-3.5 text-text-muted" />
                               )}

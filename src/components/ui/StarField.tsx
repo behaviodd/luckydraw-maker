@@ -1,7 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 import { motion } from 'framer-motion';
+
+const emptySubscribe = () => () => {};
+function useIsMounted() {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
 
 interface FloatingShape {
   x: number;
@@ -19,6 +24,23 @@ const COLORS = [
   'var(--color-gum-coral)',
 ];
 const SHAPES: FloatingShape['shape'][] = ['circle', 'star', 'diamond', 'heart'];
+
+function seededValue(seed: number) {
+  const value = Math.sin(seed * 12345.6789) * 10000;
+  return value - Math.floor(value);
+}
+
+function buildShapes(): FloatingShape[] {
+  return Array.from({ length: 20 }, (_, i) => ({
+    x: seededValue(i + 1) * 100,
+    y: seededValue(i + 21) * 100,
+    size: 10 + seededValue(i + 41) * 18,
+    color: COLORS[Math.floor(seededValue(i + 61) * COLORS.length)],
+    shape: SHAPES[Math.floor(seededValue(i + 81) * SHAPES.length)],
+    delay: seededValue(i + 101) * 5,
+    duration: 4 + seededValue(i + 121) * 6,
+  }));
+}
 
 function ShapeElement({ shape, color, size }: { shape: string; color: string; size: number }) {
   if (shape === 'circle') {
@@ -49,21 +71,11 @@ function ShapeElement({ shape, color, size }: { shape: string; color: string; si
 }
 
 export function StarField() {
-  const [shapes, setShapes] = useState<FloatingShape[]>([]);
+  const mounted = useIsMounted();
 
-  useEffect(() => {
-    setShapes(
-      Array.from({ length: 20 }, () => ({
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: 10 + Math.random() * 18,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
-        delay: Math.random() * 5,
-        duration: 4 + Math.random() * 6,
-      }))
-    );
-  }, []);
+  if (!mounted) return <div className="star-field fixed inset-0 z-0 pointer-events-none overflow-hidden" />;
+
+  const shapes = buildShapes();
 
   return (
     <div className="star-field fixed inset-0 z-0 pointer-events-none overflow-hidden">

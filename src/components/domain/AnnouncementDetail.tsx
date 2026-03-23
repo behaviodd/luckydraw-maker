@@ -116,7 +116,15 @@ function AnnouncementContent({ announcement, onClose, showClose, isAdmin }: {
                 'prose-img:border-3 prose-img:border-gum-black prose-img:shadow-brutal-sm',
               ].join(' '),
         )}>
-          <Markdown>{announcement.content}</Markdown>
+          <Markdown
+            skipHtml
+            allowedElements={[
+              'h1','h2','h3','h4','h5','h6','p','ul','ol','li','a','strong','em',
+              'code','pre','blockquote','img','hr','br','table','thead','tbody','tr','th','td',
+            ]}
+          >
+            {announcement.content}
+          </Markdown>
         </div>
       </div>
     </div>

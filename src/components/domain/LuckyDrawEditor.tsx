@@ -10,7 +10,6 @@ import { createClient } from '@/lib/supabase/client';
 import { compressAndUpload, BucketNotFoundError } from '@/lib/imageUtils';
 import { useAuth } from '@/hooks/useAuth';
 import { useUIStore } from '@/stores/uiStore';
-import { useThemeStore } from '@/stores/themeStore';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
 import { DrawItemCard } from './DrawItemCard';
@@ -42,7 +41,6 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
   const { user } = useAuth();
   const supabase = createClient();
   const addToast = useUIStore((s) => s.addToast);
-  const isCottonCandy = useThemeStore((s) => s.currentTheme) === 'cotton-candy';
   const [saving, setSaving] = useState(false);
   const [ticketOptions, setTicketOptions] = useState<number[]>(
     existingDraw?.ticketOptions ?? [1, 2, 3, 5, 10]
@@ -182,7 +180,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         <GlassCard>
-          <h2 className={cn("font-display text-lg mb-4", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>기본 설정</h2>
+          <h2 className="font-display text-lg mb-4 text-gum-pink">기본 설정</h2>
           <div className="flex flex-col gap-4">
             <div>
               <label className="text-sm text-text-secondary mb-1 block font-bold">럭키드로우 이름</label>
@@ -201,18 +199,13 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
                   onClick={() => setValue('probabilityMode', 'equal')}
                   className={cn(
                     'p-4 text-left transition-all',
-                    isCottonCandy
-                      ? cn('border rounded-2xl',
-                          probabilityMode === 'equal'
-                            ? 'border-accent-primary bg-accent-tertiary/30 shadow-[0_0_16px_rgba(125,212,190,0.15)]'
-                            : 'border-[rgba(100,200,176,0.2)] bg-bg-card hover:border-accent-primary')
-                      : cn('border-3',
-                          probabilityMode === 'equal'
-                            ? 'border-gum-black bg-gum-yellow/20 shadow-brutal-yellow'
-                            : 'border-gum-black/20 bg-bg-card hover:border-gum-black shadow-brutal-sm')
+                    cn('border-3',
+                        probabilityMode === 'equal'
+                          ? 'border-gum-black bg-gum-yellow/20 shadow-brutal-yellow'
+                          : 'border-gum-black/20 bg-bg-card hover:border-gum-black shadow-brutal-sm')
                   )}
                 >
-                  <Sparkles className={cn("w-5 h-5 mb-2", isCottonCandy ? "text-text-primary" : "text-gum-yellow")} />
+                  <Sparkles className="w-5 h-5 mb-2 text-gum-yellow" />
                   <p className="text-sm font-bold text-gum-black">균등확률</p>
                   <p className="text-xs text-text-secondary mt-1">모든 아이템 동일 확률!</p>
                 </button>
@@ -221,18 +214,13 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
                   onClick={() => setValue('probabilityMode', 'weighted')}
                   className={cn(
                     'p-4 text-left transition-all',
-                    isCottonCandy
-                      ? cn('border rounded-2xl',
-                          probabilityMode === 'weighted'
-                            ? 'border-accent-primary bg-accent-tertiary/30 shadow-[0_0_16px_rgba(125,212,190,0.15)]'
-                            : 'border-[rgba(100,200,176,0.2)] bg-bg-card hover:border-accent-primary')
-                      : cn('border-3',
-                          probabilityMode === 'weighted'
-                            ? 'border-gum-black bg-gum-pink/15 shadow-brutal-pink'
-                            : 'border-gum-black/20 bg-bg-card hover:border-gum-black shadow-brutal-sm')
+                    cn('border-3',
+                        probabilityMode === 'weighted'
+                          ? 'border-gum-black bg-gum-pink/15 shadow-brutal-pink'
+                          : 'border-gum-black/20 bg-bg-card hover:border-gum-black shadow-brutal-sm')
                   )}
                 >
-                  <Scale className={cn("w-5 h-5 mb-2", isCottonCandy ? "text-text-primary" : "text-gum-pink")} />
+                  <Scale className="w-5 h-5 mb-2 text-gum-pink" />
                   <p className="text-sm font-bold text-gum-black">차등확률</p>
                   <p className="text-xs text-text-secondary mt-1">수량 비례 확률!</p>
                 </button>
@@ -242,7 +230,7 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
         </GlassCard>
 
         <GlassCard>
-          <h2 className={cn("font-display text-lg mb-2", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>뽑기 횟수 버튼 설정</h2>
+          <h2 className="font-display text-lg mb-2 text-gum-pink">뽑기 횟수 버튼 설정</h2>
           <p className="text-xs text-text-secondary mb-4">현장에서 손님에게 제공할 횟수 버튼을 선택하세요.</p>
           <div className="flex flex-wrap gap-2">
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => {
@@ -259,15 +247,10 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
                   }}
                   className={cn(
                     'w-12 h-12 text-sm font-display transition-all',
-                    isCottonCandy
-                      ? cn('border rounded-xl',
-                          selected
-                            ? 'border-accent-primary bg-accent-tertiary/30 text-text-primary shadow-[0_0_12px_rgba(125,212,190,0.2)]'
-                            : 'border-[rgba(100,200,176,0.2)] bg-bg-card text-text-muted hover:border-accent-primary')
-                      : cn('border-3',
-                          selected
-                            ? 'border-gum-black bg-gum-pink text-white shadow-brutal-sm'
-                            : 'border-gum-black/20 bg-bg-card text-text-muted hover:border-gum-black')
+                    cn('border-3',
+                        selected
+                          ? 'border-gum-black bg-gum-pink text-white shadow-brutal-sm'
+                          : 'border-gum-black/20 bg-bg-card text-text-muted hover:border-gum-black')
                   )}
                 >
                   {n}회
@@ -279,14 +262,9 @@ export function LuckyDrawEditor({ existingDraw }: LuckyDrawEditorProps) {
 
         <GlassCard>
           <div className="flex items-center justify-between mb-4">
-            <h2 className={cn("font-display text-lg", isCottonCandy ? "text-text-primary" : "text-gum-pink")}>아이템</h2>
+            <h2 className="font-display text-lg text-gum-pink">아이템</h2>
             {probabilityMode === 'weighted' && totalQuantity > 0 && (
-              <span className={cn(
-                "text-xs text-text-secondary font-mono bg-bg-subtle px-3 py-1",
-                isCottonCandy
-                  ? "border border-[rgba(100,200,176,0.2)] rounded-full"
-                  : "border-2 border-gum-black/10"
-              )}>
+              <span className="text-xs text-text-secondary font-mono bg-bg-subtle px-3 py-1 border-2 border-gum-black/10">
                 총 {totalQuantity}개
               </span>
             )}
